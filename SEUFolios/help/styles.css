@@ -1,0 +1,20 @@
+/* CSS Document */
+
+.help_button {
+	height:1.2em; 
+	margin:0.2em 5px 0 5px;	
+}
+
+.show { display:block; }
+.hidden { display:none; }
+
+#help_box {
+	position:absolute;
+	z-index:999;
+	
+	width:250px;
+	height:auto;
+	padding:1em;
+	background-color:#fff;	
+	border:2px solid #eee;
+}
