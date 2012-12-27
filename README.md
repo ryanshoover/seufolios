@@ -15,3 +15,7 @@ Features include:
 * Scribd integration - Scribd embedding is built into the Add Media function of the New Post page, allowing for easy insertion of Word, PDF, and PPT files
 * Help bubbles - in-line help "bubbles" are added throughout the Dashboard to explain new features added through the plugin
 
+Still left to develop:
+* Clean up of outside query
+* GUI support for custom taxonomies
+* Many many more
