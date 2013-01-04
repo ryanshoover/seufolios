@@ -3,7 +3,7 @@
 Plugin Name: SEU Folios
 Description: Adds customization for eportfolio functions
 Author: Ryan Hoover
-Version: 2.0
+Version: 2.1
 Author URI: http://ryanhoover.net
 
 What's new
@@ -17,11 +17,11 @@ What's new
 //***Action hooks
 
 //Enable whole plugin
-add_option('enable_seufolios_features', 1); 				//adds the option if it doesn't already exist. Must be overridden in site settings. 0 means no go, 1 means go
+add_option('enable_seufolios_features', 0); 				//adds the option if it doesn't already exist. Must be overridden in site settings. 0 means no go, 1 means go
 if(get_option('enable_seufolios_features') != 0) {
 
 	//signup disclaimer
-	add_action('signup_extra_fields', 'add_disclaimer');
+	//add_action('signup_extra_fields', 'add_disclaimer');	//no need - no new users in sites.stedwards
 	//add_filter('wpmu_validate_user_signup', 'check_fields');
 	
 	//course and doc_type taxonomies
