@@ -13,7 +13,10 @@ function insert_roles() {
   remove_role('professors');
   remove_role('peers');
   */
-  add_role('professor', 'Professor' ,array('read' => true));
+  
+  //removed - not needed in edublogs setup
+  //add_role('professor', 'Professor' ,array('read' => true));
+  
   add_role('peer', 'Peer', array('read' => true));
 }
 
