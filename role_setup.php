@@ -58,25 +58,26 @@ function include_professors() {
 
 function get_the_user_role($user_login) { 
         global $wpdb, $wp_roles; 
+		$return = 'World';
 
 		$user = get_user_by('login', $user_login );
-
+		
         if ( !isset($wp_roles) ) 
             $wp_roles = new WP_Roles(); 
-			
-		if ($user && $user->has_cap('manage_categories')) //test if user exists (logged in) then if it has admin caps
-			return 'Administrator'; //Give admins and superadmins Administrator role
 	    		
 		foreach($wp_roles->role_names as $role => $Role) {
 		  $caps = $wpdb->prefix . 'capabilities'; 
 		  
-		  if (array_key_exists($role, $user->$caps)) {
-			  return $Role; 
-		  } 
+		  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
+			  $return = $Role; 
+		  }
+		   
 		} 
 		
-		$no_role = 'World';
-		return $no_role;
+		if ($return == 'World' && $user && $user->has_cap('manage_categories')) //test if user exists (logged in) then if it has admin caps
+			$return = 'Administrator'; //Give admins and superadmins Administrator role
+		
+		return $return;
 
 } 
 

@@ -133,7 +133,7 @@ function get_posts_visible_to_user($user) {
 }
 
 // --------------------------------------------------------------------
-
+// !!not used
 function get_social_access_control_for_user($category_id, $user) {
 	$user = wp_get_current_user();
 	

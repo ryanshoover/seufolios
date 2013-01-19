@@ -3,13 +3,13 @@
 Plugin Name: SEU Folios
 Description: Adds customization for eportfolio functions
 Author: Ryan Hoover
-Version: 2.1
+Version: 2.2
 Author URI: http://ryanhoover.net
 
 What's new
-- evaluation system
-- help bubbles
-- multi-department options
+- network admin moved to network settings submenu
+- reworked network admin screens
+- user roles changed to match edublogs roles
 */
 
 
@@ -20,10 +20,6 @@ What's new
 add_option('enable_seufolios_features', 0); 				//adds the option if it doesn't already exist. Must be overridden in site settings. 0 means no go, 1 means go
 if(get_option('enable_seufolios_features') != 0) {
 
-	//signup disclaimer
-	//add_action('signup_extra_fields', 'add_disclaimer');	//no need - no new users in sites.stedwards
-	//add_filter('wpmu_validate_user_signup', 'check_fields');
-	
 	//course and doc_type taxonomies
 	add_action( 'init', 'add_taxonomies' ); 
 	
@@ -45,29 +41,67 @@ if(get_option('enable_seufolios_features') != 0) {
 	
 	//post visibility
 	require_once($plugin_url .'post_visibility.php');
+	
+	//Add network admin screen for departments
+	add_action('network_admin_menu', 'setup_network_admin_page');
 
 } //end if get_option
 
 //***Functions
 
-//test for stedwards.edu email
-/* commented out - not needed in LDAP setup
-function check_fields($result) {
-	$errors = new WP_Error();
-	$user_email_explode = explode('@', $result['user_email']);
-	 if( !preg_match("/stedwards.edu/i", $user_email_explode[1]) ) {
-		$result['errors']->add('user_email', '<strong>ERROR</strong>: You have to use a stedwards.edu email address to create an account.');
-	 }
-	 return $result;
-}
-*/
-
-function add_disclaimer() {
-$output = '<p style="font-size:0.9em;margin-left:2em;">*Note, you <em>must</em> use a stedwards.edu email address to register.<br />You can change it after you\'ve set up your account.</p>';
-echo $output;
+//universal admin page based in Network Settings
+function setup_network_admin_page() {
 	
+	add_submenu_page(
+       'settings.php',
+       'SEUFolios Settings',
+       'SEUFolios',
+       'manage_network_options',
+       'seufolios_settings',
+       'seufolios_admin_page'
+  );
+  
 }
 
+function seufolios_admin_page() {
+	if ( !current_user_can( 'manage_options' ) )  {
+		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	}
+	
+	wp_enqueue_script('jquery');
+	?>
+    <style>
+		.major_div {display:none; width:90%;}
+	</style>
+    <div class="wrap">
+    <h2>Pick a section to manage</h2>
+    <form name="major_options" id="major_options">
+    	<select name="change_major_options" id="change_major_options">
+        	<option selected>--Choose a section--</option>
+            <option value="all_depts">All Departments</option>
+            <option value="ind_dept">Individual Department</option>
+            <option value="eval_questions">Evaluation Questions</option>
+            <option value="help_fields">Help Fields</option>
+        </select>
+    </form>
+    </div>
+    
+    <div id="all_depts" class="major_div"><?php control_dept_options(); ?></div>
+    <div id="ind_dept" class="major_div"><?php control_course_list(); control_evaluation_questions(); ?></div>
+    <div id="eval_questions" class="major_div"><?php control_eval_ques_options(); ?></div>
+    <div id="help_fields" class="major_div"><?php control_help_fields(); ?></div>
+    
+    <script>
+	(function($) {
+		$('#change_major_options').change(function() {
+		   jQuery('.major_div').hide();
+		   jQuery("#" + jQuery(this).attr('value') ).show();
+		});
+	})( jQuery );
+	</script>
+    
+	<?php
+}
 
 //call all functions for extra taxonomies
 function add_taxonomies () {

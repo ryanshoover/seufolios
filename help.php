@@ -12,7 +12,7 @@ add_action('wp_ajax_help_edit_field', 'help_edit_field');
 add_action('wp_ajax_help_delete_field', 'help_delete_field');
 
 //Add network admin screen for departments
-add_action('network_admin_menu', 'setup_admin_page');
+//add_action('network_admin_menu', 'setup_admin_page');
 
 //Setup help sql table
 $core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
@@ -93,12 +93,10 @@ function setup_admin_page() {
 
 function control_help_fields() {
 //creates the help network admin page
-	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
-	}
 	
+	wp_enqueue_script('jquery');
 	?>
-	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js?ver=1.3.2'></script>
+	
     <style>
 	table.seufolios {
 		border-spacing:0;
@@ -110,6 +108,9 @@ function control_help_fields() {
 	}
 	table.seufolios tr:nth-child(even) {
     	background-color: #EEE;
+	}
+	table.seufolios tr.body_row td {
+		border-top: #AAA solid thin;
 	}
 	</style>
 	<div class="wrap">
@@ -172,7 +173,7 @@ function create_help_table() {
 	$return =  "<table class='seufolios'> \n <tr><th>Key</th><th>Content</th><th></th></tr>";
 	$helps = get_helps();
 	foreach($helps as $help) {
-		$return .= "<tr id='row_$help->id'><td>$help->help_key</td><td>$help->content</td><td><button onclick='editHelp(\"$help->id\");'>Edit</button></td></tr>\n";
+		$return .= "<tr id='row_$help->id' class='body_row'><td>$help->help_key</td><td>$help->content</td><td><button onclick='editHelp(\"$help->id\");'>Edit</button></td></tr>\n";
 	}
 	$return .= "</table>\n";
 	

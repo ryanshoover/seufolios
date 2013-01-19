@@ -9,7 +9,7 @@ require_once('classes/wp-admin-menu-classes.php'); //allows us to modify the ord
 
 //***WP Hooks
 //Add user profile w WP hooks
-add_action('signup_extra_fields', 'add_custom_signup_fields');
+//add_action('signup_extra_fields', 'add_custom_signup_fields'); //can't get it to work, not needed in edublogs
 add_action( 'show_user_profile', 'add_custom_user_profile_fields' );
 add_action( 'edit_user_profile', 'add_custom_user_profile_fields' );
 add_action( 'personal_options_update', 'save_custom_user_profile_fields' );
@@ -24,7 +24,7 @@ add_action( "admin_head-post-new.php", 'meta_box_instruction' ); //new post
 add_action( "admin_head-post.php", 'meta_box_instruction' );    //edit post
 
 //Add network admin screen for departments
-add_action('network_admin_menu', 'control_dept_info');
+//add_action('network_admin_menu', 'control_dept_info');
 add_action('wp_ajax_set_default_dept', 'set_default_dept_ajax' );
 
 //Setup departments sql table
@@ -457,7 +457,7 @@ function control_dept_options() {
             </table>
         </div>
         <div id="dept_form">
-            <h2>Add New Department</h2>
+            <h3>Add New Department</h3>
             <form name="add_new" id="add_new" method="POST">
                 <label for="new_abbr">Dept. Abbreviation</label> <input type="text" name="new_abbr" maxlength="4">
                 <label for="new_title">Dept. Title</label> <input type="text" name="new_title" >
@@ -557,7 +557,7 @@ function control_course_list() {
 	}
 	</style>
 	<div class="wrap">
-        <h2>Department Courses</h2>
+        <h2>Pick a department</h2>
         <div id="choose_dept">
         	<form name="choose_dept" id="choose_dept">
                 <select name="dept_select" id="dept_select">
@@ -571,11 +571,12 @@ function control_course_list() {
                 </select>
             </form>
         </div>
+        <h2>Courses</h2>
         <div id="courses_list">
             
         </div>
         <div id="courses_form">
-            <h2>Add New Course</h2>
+            <h3>Add New Course</h3>
             <form name="add_new" id="add_new" method="POST">
                 <label for="new_num">Course Number</label> <input type="text" name="new_num">
                 <label for="new_title">Course Title</label> <input type="text" name="new_title" >
@@ -845,7 +846,7 @@ function create_course_table($dept_id) {
 
 	//create html and return
 	$result = "<table class='seufolios'>\n
-		<tr><th>Number</th><th>Title</th></tr>";
+		<tr><th>Number</th><th>Title</th><th>&nbsp;</th></tr>";
 	$courses = get_courses($dept_id);
 	foreach($courses as $course) {
 		$result .= "<tr><td>$course->number</td><td>$course->title</td> <td><button id='delete_$course->id' class='delete_button' type='button' onclick='delete_course($course->id)'>Delete</button></td></tr>\n";	
@@ -870,12 +871,14 @@ function control_evaluation_questions() {
 	<style>
 	div.main_group {
 		float:left;
-		margin:0 2em 0 0;	
+		margin:0 1% 0 0;	
 	}
+	div#sections { width:35%; }
+	div#questions { width: 60%; }
 	table.seufolios { border-spacing:0; }
 	table.seufolios th, table.seufolios td {
 		text-align:left;
-		padding-right:2em;
+		padding-right:1em;
 	}
 	table.seufolios th {
 		background-color: #FFF;	
@@ -898,6 +901,7 @@ function control_evaluation_questions() {
 		font-weight:400;
 		color:gray;
 	}
+	table.seufolios td.edit { width:75px !important; }
 	td.title {padding-left:5px;}
 	
 	div#sections_form, div#questions_form {	display:none; }
@@ -906,10 +910,12 @@ function control_evaluation_questions() {
 	.align_right {text-align:right; margin-right:2em;}
 	</style>
 	<div class="wrap">
-        <h2>Department Evaluations</h2>
+        <h2>Evaluation Questions</h2>
+        <!--Commented out - duplicate of option in control_course_list, not needed in single page setup
         <div id="choose_dept">
-        	<form name="choose_dept" id="choose_dept">
-                <select name="dept_select" id="dept_select">
+        	
+            <form name="choose_dept-eval" id="choose_dept-eval">
+                <select name="dept_select-eval" id="dept_select-eval">
                 	<option value="0">--Select a Department--</option>
                 	<?php
 					$depts = get_depts();
@@ -919,7 +925,7 @@ function control_evaluation_questions() {
 					?>
                 </select>
             </form>
-        </div>
+        </div>-->
         
         <!--Sections-->
         <div id="sections" class="main_group">
@@ -990,7 +996,9 @@ function control_evaluation_questions() {
 				  function (response) {
 					  jQuery('#sections_list').html(response);
 				  });
-			document.getElementById('sections_form').style.display = 'block';
+			jQuery('#sections_form').show();//document.getElementById('sections_form').style.display = 'block';
+			jQuery('#questions_list').html('&nbsp;');
+			jQuery('#questions_form').hide();
 		});
 		
 		//Add new section
@@ -1179,8 +1187,8 @@ function create_sec_table($dept_id) {
 		$result .= "<tr id='secrow_$section->id'>
 					<td class='title'>$section->title</td>
 					<td class='desc'>$section->description</td>
-					<td>
-					    <button id='edit_$section->id' class='edit_button' type='button' onclick='edit_section($section->id, $section->order_loc);'>Edit</button> &nbsp;&nbsp;
+					<td class='edit'>
+					    <button id='edit_$section->id' class='edit_button' type='button' onclick='edit_section($section->id, $section->order_loc);'>Edit</button>&nbsp;
 						<button id='show_questions_$section->id' class='show_questions_button' type='button' onclick='show_questions($section->id, this)'>&raquo;</button></td></tr>\n";	
 	}
 	

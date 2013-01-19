@@ -6,7 +6,7 @@ add_action('wp_enqueue_scripts', 'toolbar_scripts_method');
 add_action( 'admin_bar_menu', 'toolbar_evaluation', 999 );
 
 //Add network admin screen for evaluation question types
-add_action('network_admin_menu', 'control_eval_ques');
+//add_action('network_admin_menu', 'control_eval_ques');
 
 //Setup eval sql table
 $core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
@@ -22,13 +22,16 @@ add_action('wp_ajax_eval_delete_question_type', 'add_eval_type_delete_ajax' );
 
 function toolbar_scripts_method() {
 	$current_user = wp_get_current_user();
+	
 	$user_role = get_user_role($current_user);
+	
 	global $blog_id;
 	$site_details = get_blog_details($blog_id, 'siteurl');
 	
-	if($user_role == 'Professor' || $user_role == 'Super_admin') {
+	if($user_role == 'Teacher' || $user_role == 'Super_admin') {
 		echo "<script> var siteurl='" .urlencode($site_details->siteurl) ."'; </script>";
 		$plugin_url = plugins_url() .'/SEUFolios/';
+		wp_enqueue_script('jquery');
 		wp_enqueue_script('seufolios_iframe_script', plugins_url( 'evaluation/js/scripts.js' , __FILE__ ) );
 		wp_register_style( 'prefix-style', plugins_url('evaluation/css/styles.css', __FILE__) );
 		wp_enqueue_style( 'prefix-style' );
@@ -52,7 +55,7 @@ function toolbar_evaluation( $wp_admin_bar ) {
 	
 	if(count($results) > 0) $submit .= $results[0]->answers;
 	
-	if($user_role == 'Professor' || $user_role == 'Super_admin') {
+	if($user_role == 'Teacher' || $user_role == 'Super_admin') {
 		$plugin_url = plugins_url() .'/SEUFolios/';
 		  
 		$args = array(
@@ -88,22 +91,24 @@ function create_eval_sqltable() {
 
 function get_user_role($user) { 
         global $wpdb, $wp_roles; 
-		
-		//$user = get_user_by('login', $user_login );
-        if ( !isset($wp_roles) ) 
+		$return = 'World';
+
+		if ( !isset($wp_roles) ) 
             $wp_roles = new WP_Roles(); 
-			
-		if ( current_user_can('manage_network') )
-			return 'Super_admin';
-	 
-	 	//return $wp_roles;
+	    		
 		foreach($wp_roles->role_names as $role => $Role) {
 		  $caps = $wpdb->prefix . 'capabilities'; 
 		  
-		  if (array_key_exists($role, $user->$caps)) {
-			  return $Role; 
-		  } 
+		  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
+			  $return = $Role; 
+		  }
+		   
 		} 
+		
+		if ($return == 'World' && $user && $user->has_cap('manage_categories')) //test if user exists (logged in) then if it has admin caps
+			$return = 'Administrator'; //Give admins and superadmins Administrator role
+		
+		return $return;
 
 } 
 
@@ -119,8 +124,9 @@ function control_eval_ques_options() {
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
+	wp_enqueue_script('jquery');
 	?>
-	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js?ver=1.3.2'></script>
+	
     <style>
 	table.seufolios {
 		border-spacing:0;
@@ -132,12 +138,16 @@ function control_eval_ques_options() {
 	table.seufolios tr:nth-child(even) {
     	background-color: #EEE;
 	}
-	table.seufolios .code {
+	table.seufolios .displayCode {
 		font-family:"Courier New", Courier, monospace;	
 		max-width: 500px;
 		max-height:3em;
+	}
+	div.code {
+		width:100%;
 		overflow:scroll;
 	}
+	
 	</style>
     
 	<div class="wrap">
@@ -244,7 +254,7 @@ function create_eval_q_table() {
 		$result .= "<tr id='secrow_$q->id'>
 					<td class='slug'>$q->slug</td>
 					<td class='displayName'>$q->displayName</td>
-					<td class='code'><xmp>$code</xmp></td>
+					<td class='displayCode'><div class='code'><xmp>$code</xmp></div></td>
 					<td>
 					    <button id='edit_$q->id' class='edit_button' type='button' onclick='edit_q($q->id);'>Edit</button>
 					</td></tr>\n";	
