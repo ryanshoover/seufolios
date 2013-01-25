@@ -100,7 +100,7 @@ function get_user_role($user) {
 		foreach($wp_roles->role_names as $role => $Role) {
 		  $caps = $wpdb->prefix . 'capabilities'; 
 		  
-		  if (array_key_exists($role, $user->$caps)) {
+		  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
 			  return $Role; 
 		  } 
 		} 

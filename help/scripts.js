@@ -10,7 +10,15 @@ function createDiv() {
 	_body.appendChild(_div);
 }
 
-function showHelp(image, key) {
+function showHelp(image) {
+	jQuery(image).next('div').show();
+}
+
+function hideHelp(image) {
+	jQuery(image).next('div').hide();
+}
+
+function showHelp_old(image, key) {
 	 var viewportwidth; //complex for browser compatibility
 	 // the more standards compliant browsers (mozilla/netscape/opera/IE7) use window.innerWidth and window.innerHeight
 	 if (typeof window.innerWidth != 'undefined') viewportwidth = window.innerWidth;

@@ -30,7 +30,7 @@ function SEUFolios_headerinfo() {
 
 //add scribd to media tab menu
 function seu_scribd_media_menu($tabs) {
-  $newtab = array('scribd' => __('From Scribd', 'scribd'));
+  $newtab = array('scribd' => __('Insert Document', 'scribd'));
   return array_merge($tabs, $newtab);
 }
 
@@ -113,12 +113,88 @@ function media_seu_scribd() {
   $current_docs = $scribd->getList();
   
   $post_id = isset( $_REQUEST['post_id'] ) ? intval( $_REQUEST['post_id'] ) : 0;
+	
+  //Upload new doc to Scribd
+  ?>
   
+  
+  <form enctype="multipart/form-data" id="new_doc" action="" method="post"  class="media-upload-form type-form validate">
+  <div id="media-items">
+  <h3>Insert a new document</h3>
+  
+  <table class="describe">
+  <tr>
+  <th valign="top" scope="row" class="label">
+  <label for="datafile">Choose a file</label><span class="alignright"><abbr title="required" class="required">*</abbr></span>
+  </th>
+  <td class="field">
+  <input type="file" name="datafile" size="40" aria-required="true">
+  </td></tr>
+  <!--
+  <tr>
+  <th valign="top" scope="row" class="label">
+  <label for="doc_type">Document type</label>
+  </th>
+  <td class="field">
+  <select name="doc_type"><option value="">---</option><option value="PDF">PDF</option><option value="DOC">DOC</option><option value="TXT">TXT</option><option value="PPT">PPT</option></select>
+  </td></tr>
+  -->
+  <tr>
+  <th valign="top" scope="row" class="label">
+  <label for="linked_text">Text for the link</label><span class="alignright"><abbr title="required" class="required">*</abbr></span>
+  </th>
+  <td class="field">
+  <input type="text" name="linked_text" aria-required="true" placeholder="Used as the document's hyperlink"></input>
+  </td></tr>
+  <tr>
+  <th valign="top" scope="row" class="label">
+  <label for="lightbox_width">Width of window</label>
+  </th>
+  <td class="field">
+  <input type="text" name="lightbox_width" placeholder=" leave blank to use default"></input>
+  </td></tr>
+  <tr>
+  <th valign="top" scope="row" class="label">
+  <label for="lightbox_height">Height of window</label>
+  </th>
+  <td class="field">
+  <input type="text" name="lightbox_height" placeholder=" leave blank to use default"></input>
+    </td></tr>
+  <tr>
+  <th valign="top" scope="row" class="label">
+  </th>
+  <td class="field">
+  <input type="checkbox" name="lightbox"></input> Use the Lightbox pop-up window? <? insert_help('explain_lightbox'); ?>
+  </td></tr>
+  <tr>
+  <th valign="top" scope="row" class="label">
+  <label for="caption">Lightbox caption</label>
+  </th>
+  <td class="field">
+  <input type="text" name="caption" placeholder="Appears below the popup"></input>
+  </td></tr>
+  <tr>
+  <th valign="top" scope="row" class="label">
+  </th>
+  <td class="field">
+  <input type="submit" class="button" value="Insert new document"></input>
+  </td></tr></table>
+  
+  </div>
+  </form>
+  
+  <?php
+  //handles submit function of form
+  if (isset($_POST['doc_type']))
+	{
+	 insert_new_scribd_into_post();
+	}
+	
   //Choose existing Scribd doc
   ?> 
   <form id="existing_doc" action="" method="post" class="media-upload-form type-form validate">
-  <div id="media-items"><div class="media-item media-blank">
-  <h3>Choose an existing Scribd document</h3>
+  <div id="media-items">
+  <h3>Insert an existing document</h3>
   <table class="describe">
   <tr>
   <th valign="top" scope="row" class="label">
@@ -139,25 +215,25 @@ function media_seu_scribd() {
   
   <tr>
   <th scope="row" class="label">
-  <label for="linked_text">Document title</label>
+  <label for="linked_text">Text for the link</label>
   <span class="alignright"><abbr title="required" class="required">*</abbr></span>
   </th>
   <td class="field">
-  <input type="text" name="linked_text" aria-required="true"></input>
+  <input type="text" name="linked_text" aria-required="true" placeholder="Used as the document's hyperlink"></input>
   </td></tr>
   <tr>
   <th scope="row" class="label">
   <label for="lightbox_width">Width of window</label>
   </th>
   <td class="field">
-  <input type="text" name="lightbox_width"></input>
+  <input type="text" name="lightbox_width" placeholder=" leave blank to use default"></input>
   </td></tr>
   <tr>
   <th scope="row" class="label">
   <label for="lightbox_height">Height of window</label>
   </th>
   <td class="field">
-  <input type="text" name="lightbox_height"></input>
+  <input type="text" name="lightbox_height" placeholder=" leave blank to use default"></input>
   </td></tr>
   <tr>
   <th scope="row" class="label">
@@ -170,7 +246,7 @@ function media_seu_scribd() {
   <label for="caption">Lightbox caption</label>
   </th>
   <td class="field">
-  <input type="text" name="caption"></input>
+  <input type="text" name="caption" placeholder="Appears below the popup"></input>
   </td></tr>
   <tr>
   <th scope="row" class="label">
@@ -180,7 +256,7 @@ function media_seu_scribd() {
   </td>
   </tr>
   </table>
-  </div></div>
+  </div>
   </form>
   
   <?php
@@ -188,80 +264,6 @@ function media_seu_scribd() {
   if (isset($_POST['my_doc_id']))
 	{
 	 insert_existing_scribd_into_post();
-	}
-	
-  //Upload new doc to Scribd
-  ?>
-  
-  
-  <form enctype="multipart/form-data" id="new_doc" action="" method="post"  class="media-upload-form type-form validate">
-  <div id="media-items"><div class="media-item media-blank">
-  <h3>Upload a new document to Scribd</h3>
-  
-  <table class="describe">
-  <tr>
-  <th valign="top" scope="row" class="label">
-  <label for="datafile">Choose a file</label><span class="alignright"><abbr title="required" class="required">*</abbr></span>
-  </th>
-  <td class="field">
-  <input type="file" name="datafile" size="40" aria-required="true">
-  </td></tr>
-  <tr>
-  <th valign="top" scope="row" class="label">
-  <label for="doc_type">Document type</label>
-  </th>
-  <td class="field">
-  <select name="doc_type"><option value="">---</option><option value="PDF">PDF</option><option value="DOC">DOC</option><option value="TXT">TXT</option><option value="PPT">PPT</option></select>
-  </td></tr>
-  <tr>
-  <th valign="top" scope="row" class="label">
-  <label for="linked_text">Document title</label><span class="alignright"><abbr title="required" class="required">*</abbr></span>
-  </th>
-  <td class="field">
-  <input type="text" name="linked_text" aria-required="true"></input>
-  </td></tr>
-  <tr>
-  <th valign="top" scope="row" class="label">
-  <label for="lightbox_width">Width of window</label>
-  </th>
-  <td class="field">
-  <input type="text" name="lightbox_width"></input>
-  </td></tr>
-  <tr>
-  <th valign="top" scope="row" class="label">
-  <label for="lightbox_height">Height of window</label>
-  </th>
-  <td class="field">
-  <input type="text" name="lightbox_height"></input>
-    </td></tr>
-  <tr>
-  <th valign="top" scope="row" class="label">
-  </th>
-  <td class="field">
-  <input type="checkbox" name="lightbox"></input> Use the Lightbox pop-up window? <? insert_help('explain_lightbox'); ?>
-  </td></tr>
-  <tr>
-  <th valign="top" scope="row" class="label">
-  <label for="caption">Lightbox caption</label>
-  </th>
-  <td class="field">
-  <input type="text" name="caption"></input>
-  </td></tr>
-  <tr>
-  <th valign="top" scope="row" class="label">
-  </th>
-  <td class="field">
-  <input type="submit" class="button" value="Insert new document"></input>
-  </td></tr></table>
-  
-  </div></div>
-  </form>
-  
-  <?php
-  //handles submit function of form
-  if (isset($_POST['doc_type']))
-	{
-	 insert_new_scribd_into_post();
 	}
 }
 
@@ -367,21 +369,14 @@ function manage_scribd_docs() {
 	echo '</h2>';
 	//Form to Upload new doc to Scribd
   ?>
-  <style type="text/css">
-  #inside_message_box {
-	/*background-color:#FFFBCC;
-	width:500px;
-	height:1.5em;
-	padding:3px;
-	margin:3px 0 10px 0;  
-	border: #E6DB55 1px solid;*/
-  }
+  <style>
+  th.label { text-align:right; }
   </style>
   <div id="message_box">&nbsp;</div>
   
   <form enctype="multipart/form-data" id="new_doc" action="" method="post"  class="media-upload-form type-form validate">
-  <div id="media-items"><div class="media-item media-blank">
-  <h3>Upload a new document to Scribd</h3>
+  <div id="media-items">
+  <h3>Add a document to your library</h3>
   
   <table class="describe">
   <tr>
@@ -391,13 +386,14 @@ function manage_scribd_docs() {
   <td class="field">
   <input type="file" name="datafile" size="40" aria-required="true">
   </td></tr>
+  <!--
   <tr>
   <th valign="top" scope="row" class="label">
   <label for="doc_type">Document type</label>
   </th>
   <td class="field">
   <select name="doc_type" id="doc_type"><option value="">---</option><option value="pdf">PDF</option><option value="doc">DOC</option><option value="txt">TXT</option><option value="ppt">PPT</option><option value="">Other</option></select>
-  </td></tr>
+  </td></tr>-->
   <tr>
   <th valign="top" scope="row" class="label">
   </th>
@@ -405,7 +401,7 @@ function manage_scribd_docs() {
   <input type="submit" class="button" value="Upload new document"></input>
   </td></tr></table>
   
-  </div></div>
+  </div>
   </form>
   
   <?php
@@ -431,8 +427,8 @@ function manage_scribd_docs() {
   ?>
   <br /><br />
   <form enctype="multipart/form-data" id="delete_doc" action="" method="post"  class="media-upload-form type-form validate">
-  <div id="media-items"><div class="media-item media-blank">
-  <h3>Delete a document from Scribd</h3>
+  <div id="media-items">
+  <h3>Delete a document from your library</h3>
   
   <table class="describe">
   <tr>
@@ -457,7 +453,7 @@ function manage_scribd_docs() {
   <input type="submit" class="button" value="Delete document from Scribd"></input>
   </td></tr></table>
   
-  </div></div>
+  </div>
   </form>
   
   <?php
@@ -511,13 +507,13 @@ function manage_scribd_docs() {
   } 
   </script> 
   <form enctype="multipart/form-data" id="update_doc" action="" method="post"  class="media-upload-form type-form validate">
-  <div id="media-items"><div class="media-item media-blank">
-  <h3>Update a document on Scribd</h3>
+  <div id="media-items">
+  <h3>Update a document in your library</h3>
   
   <table class="describe">
   <tr>
   <th valign="top" scope="row" class="label">
-  <span class="alignleft"><label for="my_doc_id">Choose Document</label></span>
+  <label for="my_doc_id">Choose Document</label>
   </th>
   <td class="field">
   <select name="update_doc_id" aria-required="true" onchange="return updateScribdUpdate(this)">
@@ -561,7 +557,7 @@ function manage_scribd_docs() {
   <input type="submit" class="button" value="Update document"></input>
   </td></tr></table>
   
-  </div></div>
+  </div>
   </form>
   
   <?php

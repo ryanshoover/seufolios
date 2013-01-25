@@ -400,7 +400,7 @@ function meta_box_instruction($d) {
 	   switch ($tax) {
 	   case 'rats_outcomes': 
 			$help_key = 'rats_outcomes';
-			$help = return_help($help_key);
+			$help = str_replace("\n", "\\\n", return_help($help_key));
 			echo "<script type='text/javascript'>
 				  jQuery(document).ready(function(){
 					  jQuery('#rats_outcomes-tabs').append(\"" .$help ."\");
@@ -408,7 +408,7 @@ function meta_box_instruction($d) {
 			break;
 		case 'courses':
 			$help_key = 'mark_courses';
-			$help = return_help($help_key);
+			$help = str_replace("\n", "\\\n", return_help($help_key));
 			echo "<script type='text/javascript'>
 				  jQuery(document).ready(function(){
 					  jQuery('#courses-tabs').append(\"" .$help ."\");
