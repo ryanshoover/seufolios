@@ -371,12 +371,6 @@ function manage_scribd_docs() {
   ?>
   <style type="text/css">
   #inside_message_box {
-	/*background-color:#FFFBCC;
-	width:500px;
-	height:1.5em;
-	padding:3px;
-	margin:3px 0 10px 0;  
-	border: #E6DB55 1px solid;*/
   }
   </style>
   <div id="message_box">&nbsp;</div>
