@@ -185,7 +185,7 @@ function media_seu_scribd() {
   
   <?php
   //handles submit function of form
-  if (isset($_POST['doc_type']))
+  if (isset($_POST['datafile']))
 	{
 	 insert_new_scribd_into_post();
 	}
@@ -406,7 +406,7 @@ function manage_scribd_docs() {
   
   <?php
   //handles submit function of form
-  if (isset($_POST['doc_type']))
+  if (isset($_POST['datafile']))
 	{
 	 upload_new_scribd();
 	}
