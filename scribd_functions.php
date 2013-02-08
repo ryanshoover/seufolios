@@ -119,6 +119,7 @@ function media_seu_scribd() {
   
   
   <form enctype="multipart/form-data" id="new_doc" action="" method="post"  class="media-upload-form type-form validate">
+  <input type="hidden" name="insert_new" value="1">
   <div id="media-items">
   <h3>Insert a new document</h3>
   
@@ -185,7 +186,7 @@ function media_seu_scribd() {
   
   <?php
   //handles submit function of form
-  if (isset($_POST['datafile']))
+  if (isset($_POST['insert_new']))
 	{
 	 insert_new_scribd_into_post();
 	}
@@ -344,15 +345,7 @@ function insert_new_scribd_into_post() {
 	
 	
 	$html = '[scribd doc_id="' .$doc_id .'" access_key="' .$access_key .'" linked_text="' .$linked_text .'" lightbox_width="' .$lightbox_width .'" lightbox_height="' .$lightbox_height .'" lightbox="' .$lightbox .'" caption="' .$caption .'"]';
-	
-	//$plugin_url = (plugins_url().'/SEUFolios/');
-	/*
-	if ($lightbox) {
-	  //$html = '<a href="' .$plugin_url .'insert_scribd.php?doc_id=' .$doc_id .'&amp;key=' .$access_key .'&amp;width=' .$lightbox_width .'&amp;height=' .$lightbox_height .'" class="lightwindow" title="' .$linked_text .'" caption="' .$caption .'" params="lightwindow_type=external,lightwindow_height=' .$lightbox_height .',lightwindow_width=' .$lightbox_width .'">' .$linked_text .'</a>';
-	} else {
-	  //$html = '<div id="embedded_flash"><input type="button" name="show_scribd" value="Show ' .$linked_text .'" onclick=\'insert_scribd_doc(' .$doc_id .', "' .$access_key .'", ' .$lightbox_height .', ' .$lightbox_width .');\'></input></div>';
-	}
-	*/
+
 	$html = apply_filters('media_send_to_editor', $html, $send_id, $attachment);
 	return media_send_to_editor($html);
 }
@@ -375,6 +368,7 @@ function manage_scribd_docs() {
   <div id="message_box">&nbsp;</div>
   
   <form enctype="multipart/form-data" id="new_doc" action="" method="post"  class="media-upload-form type-form validate">
+  <input type="hidden" name="insert_new" value="1">
   <div id="media-items">
   <h3>Add a document to your library</h3>
   
@@ -406,7 +400,7 @@ function manage_scribd_docs() {
   
   <?php
   //handles submit function of form
-  if (isset($_POST['datafile']))
+  if (isset($_POST['insert_new']))
 	{
 	 upload_new_scribd();
 	}
