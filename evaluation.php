@@ -1,23 +1,22 @@
 <?php
 //All code related to the evaluation tools
 
-//Add link in admin bar
-add_action('wp_enqueue_scripts', 'toolbar_scripts_method');
-add_action( 'admin_bar_menu', 'toolbar_evaluation', 999 );
-
-//Add network admin screen for evaluation question types
-//add_action('network_admin_menu', 'control_eval_ques');
-
 //Setup eval sql table
 $core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
 register_activation_hook( $core_plugin_url, 'create_eval_sqltable' ); //individual evaluations
 register_activation_hook( $core_plugin_url, 'create_eval_types_sqltable' ); //types of eval questions
-
 //ajax hooks
 add_action('wp_ajax_add_ques_type_submit', 'add_eval_type_save_ajax' );
 add_action('wp_ajax_eval_edit_question_type', 'add_eval_type_edit_ajax' );
 add_action('wp_ajax_eval_delete_question_type', 'add_eval_type_delete_ajax' );
 
+
+//enable end-user features
+function enable_evaluation() {
+	//Add link in admin bar
+	add_action('wp_enqueue_scripts', 'toolbar_scripts_method');
+	add_action( 'admin_bar_menu', 'toolbar_evaluation', 999 );
+}
 
 
 function toolbar_scripts_method() {

@@ -1,10 +1,11 @@
 <?php
 
 //Scripts to set up the custom roles for SEUFolios
-
-add_action('admin_init', 'insert_roles');
-add_action('admin_init', 'include_professors');
-delete_roles(); 
+function enable_role_setup() {
+	add_action('admin_init', 'insert_roles');
+	add_action('admin_init', 'include_professors');
+	delete_roles(); 
+}
 
 //Add various roles for SEUFolios
 function insert_roles() {

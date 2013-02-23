@@ -3,7 +3,7 @@
 Plugin Name: SEU Folios
 Description: Adds customization for eportfolio functions
 Author: Ryan Hoover
-Version: 2.2.1
+Version: 2.2.2
 Author URI: http://ryanhoover.net
 
 Copyright 2013
@@ -15,42 +15,47 @@ What's new
 */
 
 
+//used for enable end user features
+add_option('enable_seufolios_features', 0); 	//adds the option if it doesn't already exist. Must be overridden in site settings. 0 means no go, 1 means go
 
-//***Action hooks
+//course and doc_type taxonomies
+add_action( 'init', 'add_taxonomies' ); 
 
-//Enable whole plugin
-add_option('enable_seufolios_features', 0); 				//adds the option if it doesn't already exist. Must be overridden in site settings. 0 means no go, 1 means go
+$plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) ));
+//multi-department features
+require_once($plugin_url .'departments.php');
+
+//scribd inclusion
+require_once($plugin_url .'scribd_functions.php');
+
+//role setup
+require_once($plugin_url .'role_setup.php');
+
+//evaluation features
+require_once($plugin_url .'evaluation.php');
+
+//help features
+require_once($plugin_url .'help.php');
+
+//post visibility
+require_once($plugin_url .'post_visibility.php');
+
+//Add network admin screen for departments
+add_action('network_admin_menu', 'setup_network_admin_page');
+
+//enable features for end user, based on site option
 if(get_option('enable_seufolios_features') != 0) {
-
-	//course and doc_type taxonomies
-	add_action( 'init', 'add_taxonomies' ); 
-	
-	$plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) ));
-	//multi-department features
-	require_once($plugin_url .'departments.php');
-	
-	//scribd inclusion
-	require_once($plugin_url .'scribd_functions.php');
-	
-	//role setup
-	require_once($plugin_url .'role_setup.php');
-	
-	//evaluation features
-	require_once($plugin_url .'evaluation.php');
-	
-	//help features
-	require_once($plugin_url .'help.php');
-	
-	//post visibility
-	require_once($plugin_url .'post_visibility.php');
-	
-	//Add network admin screen for departments
-	add_action('network_admin_menu', 'setup_network_admin_page');
-
+	enable_departments();
+	enable_evaluation();
+	enable_post_visibility();
+	//enable_role_setup(); //taken out 02222013- may be messing up edublogs
+	enable_scribd_functions();
 } //end if get_option
 
-//***Functions
 
+
+
+//***Functions
 //universal admin page based in Network Settings
 function setup_network_admin_page() {
 	

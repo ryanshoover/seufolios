@@ -6,15 +6,17 @@ add_option('scribd_api_key', 'cpkion25nntjfxqiom2u');
 add_option('scribd_secret', 'sec-bdw42wqvtbfk6gjrq39cibgw47');
 add_option('scribd_publisher_id', 'pub-9427655662973965355');
 
-//Action hooks
-add_action('wp_head', 'SEUFolios_headerinfo');
-add_filter('media_upload_tabs', 'seu_scribd_media_menu');
-add_action('media_upload_scribd', 'scribd_media_menu_handle');
-add_action('init', 'clear_shortcode'); //used to clear the Scribd shortcode used by Jetpack pluging
-//add_shortcode( 'scribd', 'scribd_shortcode' );
-add_action( 'admin_menu' , 'add_scribd_management');
-add_action('admin_head-media-upload-popup', 'file_upload_instruction');
-
+//enable end user options
+function enable_scribd_functions() {
+	//Action hooks
+	add_action('wp_head', 'SEUFolios_headerinfo');
+	add_filter('media_upload_tabs', 'seu_scribd_media_menu');
+	add_action('media_upload_scribd', 'scribd_media_menu_handle');
+	add_action('init', 'clear_shortcode'); //used to clear the Scribd shortcode used by Jetpack pluging
+	//add_shortcode( 'scribd', 'scribd_shortcode' );
+	add_action( 'admin_menu' , 'add_scribd_management');
+	add_action('admin_head-media-upload-popup', 'file_upload_instruction');
+}
 //*****
 //Add Scribd media type
 

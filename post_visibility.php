@@ -2,33 +2,34 @@
 //code to control individual post visibility
 //based on plugin social-access-control (should be able to Google it)
 
-include_once('post_visibility/post_visibility_options.php');
+
 
 //action hooks
-
-add_filter('comments_array', 'hide_comment', 10000);
-add_filter('get_comments_number', 'hide_comment_number', 10000);
-
-add_filter('posts_where', 'filter_posts', 10000);
-add_filter('single_post_title', 'filter_title', 10000, 2);
-add_filter('the_title', 'filter_title', 10000, 2);
-add_filter('the_title_rss', 'filter_title', 10000, 2);
-
-add_filter('the_content', 'filter_content', 10000);
-add_filter('the_excerpt', 'hide_text', 10000);
-
-
-//added by rsh - implement privacy with pages
-add_filter('wp_list_pages_excludes', 'filter_pages', 10000);
-
-// Added by Justin at Multinc
-add_action('edit_form_advanced','edit_post_controls', 10000);
-add_action('edit_page_form', 'edit_post_controls', 10000); //added by rsh - include edit_post in page edits
-
-add_action('wp_insert_post', 'save_post', 10000);
-
-//add_filter('getarchives_where',	array('social_access_control','filter_getarchives_where'), 10000);
-
+function enable_post_visibility() {
+	include_once('post_visibility/post_visibility_options.php');
+	
+	add_filter('comments_array', 'hide_comment', 10000);
+	add_filter('get_comments_number', 'hide_comment_number', 10000);
+	
+	add_filter('posts_where', 'filter_posts', 10000);
+	add_filter('single_post_title', 'filter_title', 10000, 2);
+	add_filter('the_title', 'filter_title', 10000, 2);
+	add_filter('the_title_rss', 'filter_title', 10000, 2);
+	
+	add_filter('the_content', 'filter_content', 10000);
+	add_filter('the_excerpt', 'hide_text', 10000);
+	
+	//added by rsh - implement privacy with pages
+	add_filter('wp_list_pages_excludes', 'filter_pages', 10000);
+	
+	// Added by Justin at Multinc
+	add_action('edit_form_advanced','edit_post_controls', 10000);
+	add_action('edit_page_form', 'edit_post_controls', 10000); //added by rsh - include edit_post in page edits
+	
+	add_action('wp_insert_post', 'save_post', 10000);
+	
+	//add_filter('getarchives_where',	array('social_access_control','filter_getarchives_where'), 10000);
+}
 
 //----------------------------------------
 //for general setup and values

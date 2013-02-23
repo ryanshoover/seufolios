@@ -4,48 +4,52 @@
 //Features include student profile modifications, course taxonomy terms
 //*****
 
+
+//setup depts
 //include other classes
 require_once('classes/wp-admin-menu-classes.php'); //allows us to modify the order of admin menus
-
-//***WP Hooks
-//Add user profile w WP hooks
-//add_action('signup_extra_fields', 'add_custom_signup_fields'); //can't get it to work, not needed in edublogs
-add_action( 'show_user_profile', 'add_custom_user_profile_fields' );
-add_action( 'edit_user_profile', 'add_custom_user_profile_fields' );
-add_action( 'personal_options_update', 'save_custom_user_profile_fields' );
-add_action( 'edit_user_profile_update', 'save_custom_user_profile_fields' );
-
-//Hook for adding custom post and taxonomies
-add_action('init', 'setup_custom_tax');
-add_filter( 'wp_page_menu', 'custom_page_menu' ,10,2 ); //adds custom posts to nav menu
-
-//adds help bubble for taxonomy meta-block
-add_action( "admin_head-post-new.php", 'meta_box_instruction' ); //new post
-add_action( "admin_head-post.php", 'meta_box_instruction' );    //edit post
-
-//Add network admin screen for departments
-//add_action('network_admin_menu', 'control_dept_info');
-add_action('wp_ajax_set_default_dept', 'set_default_dept_ajax' );
 
 //Setup departments sql table
 $core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
 register_activation_hook( $core_plugin_url, 'create_dept_sqltable' );
 
+//Add network admin screen for departments
 //Setup department courses settings pages
 add_action('wp_ajax_add_dept_submit', 'add_dept_save_ajax' );
 add_action('wp_ajax_add_course_select_dept', 'add_course_deptselect');
 add_action('wp_ajax_add_course_submit', 'add_course_save_ajax');
 add_action('wp_ajax_add_course_delete', 'add_course_delete_ajax');
+add_action('wp_ajax_set_default_dept', 'set_default_dept_ajax' );
 
-//Setup department evaluation settings pages ajax
-add_action('wp_ajax_eval_select_dept', 'eval_select_dept');
-add_action('wp_ajax_eval_add_section', 'eval_add_section');
-add_action('wp_ajax_eval_edit_section', 'eval_edit_section');
-add_action('wp_ajax_eval_delete_section', 'eval_delete_section');
-add_action('wp_ajax_eval_show_questions', 'eval_show_questions');
-add_action('wp_ajax_eval_add_question', 'eval_add_question');
-add_action('wp_ajax_eval_edit_question', 'eval_edit_question');
-add_action('wp_ajax_eval_delete_question', 'eval_delete_question');
+//turn on single user features
+function enable_departments() {
+	//***WP Hooks
+	//Add user profile w WP hooks
+	//add_action('signup_extra_fields', 'add_custom_signup_fields'); //can't get it to work, not needed in edublogs
+	add_action( 'show_user_profile', 'add_custom_user_profile_fields' );
+	add_action( 'edit_user_profile', 'add_custom_user_profile_fields' );
+	add_action( 'personal_options_update', 'save_custom_user_profile_fields' );
+	add_action( 'edit_user_profile_update', 'save_custom_user_profile_fields' );
+	
+	//Hook for adding custom post and taxonomies
+	add_action('init', 'setup_custom_tax');
+	add_filter( 'wp_page_menu', 'custom_page_menu' ,10,2 ); //adds custom posts to nav menu
+	
+	//adds help bubble for taxonomy meta-block
+	add_action( "admin_head-post-new.php", 'meta_box_instruction' ); //new post
+	add_action( "admin_head-post.php", 'meta_box_instruction' );    //edit post
+	
+	//Setup department evaluation settings pages ajax
+	add_action('wp_ajax_eval_select_dept', 'eval_select_dept');
+	add_action('wp_ajax_eval_add_section', 'eval_add_section');
+	add_action('wp_ajax_eval_edit_section', 'eval_edit_section');
+	add_action('wp_ajax_eval_delete_section', 'eval_delete_section');
+	add_action('wp_ajax_eval_show_questions', 'eval_show_questions');
+	add_action('wp_ajax_eval_add_question', 'eval_add_question');
+	add_action('wp_ajax_eval_edit_question', 'eval_edit_question');
+	add_action('wp_ajax_eval_delete_question', 'eval_delete_question');
+
+}
 
 //***Functions
 
