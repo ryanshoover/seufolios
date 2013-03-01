@@ -378,15 +378,20 @@ function rats_default_content( $content, $post ) {
 						Instructor: <br>
 						School: <br>
 						Semester: <hr>
-						<p>Describe how this course fulfilled the learning outcomes you marked in the box to the right of this textbox.  In your response, be sure to include a brief description of the course, its major units, and how performance was measured (e.g. exams, papers, presentations).<br>(Be sure to mark the learning outcomes you fulfilled in the box to the right of this textbox.)</p>
-						<p>Include any papers, tests, and other documents that demonstrate what you learned in this class. Insert these documents using the <em>Upload/Insert -> From Scribd</em> feature directly above this textbox.</p>";
+						<ol><li>First, (Be sure to mark the learning outcomes you fulfilled in the box to the right of this text box and the course in the text box.</li>
+						<li>Provide a brief description of the course, its major units, and how performance was measured (e.g. exams, papers, presentations).</li>
+
+						<li>Third, write a brief narrative that explains what material you examined and what you learned that allowed you to fulfill the learning outcomes you marked.</li>
+
+						<li>Fourth, clearly describe how your performance was measured in the course. Include any papers, tests, and other documents that demonstrate what you learned in this class. Insert these documents using the Upload/Insert -> From Scribd feature directly above this text box.</li></ol>
+						<p>Include any papers, tests, and other documents that demonstrate what you learned in this class. Insert these documents using the <em>Upload/Insert -> From Scribd</em> feature directly above this text box.</p>";
         	break;
         case 'related_life':
             $content = "Concise description of the activity:<br>
 						Dates<br>
 						From: &nbsp;&nbsp;&nbsp;&nbsp;To: <hr>
-						<p>Describe how this experience fulfilled the learning outcomes you marked in the box to the right of this textbox.  In your response, be sure to include a brief description of your primary responsibilities or focus.<br>(Be sure to mark the learning outcomes you fulfilled in the box to the right of this textbox.)</p>
-						<p>Include any documents or evidence that demonstrate what you learned in this class. Insert these documents using the <em>Upload/Insert -> From Scribd</em> feature directly above this textbox.</p>";
+						<p>Describe how this experience fulfilled the learning outcomes you marked in the box to the right of this text box.  In your response, be sure to include a brief description of your primary responsibilities or focus.<br>(Be sure to mark the learning outcomes you fulfilled in the box to the right of this text box.)</p>
+						<p>Include any documents or evidence that demonstrate what you learned in this class. Insert these documents using the <em>Upload/Insert -> From Scribd</em> feature directly above this text box.</p>";
         	break;
     }
 
