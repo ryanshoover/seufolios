@@ -378,13 +378,11 @@ function rats_default_content( $content, $post ) {
 						Instructor: <br>
 						School: <br>
 						Semester: <hr>
-						<ol><li>First, (Be sure to mark the learning outcomes you fulfilled in the box to the right of this text box and the course in the text box.</li>
-						<li>Provide a brief description of the course, its major units, and how performance was measured (e.g. exams, papers, presentations).</li>
-
-						<li>Third, write a brief narrative that explains what material you examined and what you learned that allowed you to fulfill the learning outcomes you marked.</li>
-
-						<li>Fourth, clearly describe how your performance was measured in the course. Include any papers, tests, and other documents that demonstrate what you learned in this class. Insert these documents using the Upload/Insert -> From Scribd feature directly above this text box.</li></ol>
-						<p>Include any papers, tests, and other documents that demonstrate what you learned in this class. Insert these documents using the <em>Upload/Insert -> From Scribd</em> feature directly above this text box.</p>";
+						<ol>
+						<li>Mark the learning outcomes and course in the boxes to the right.</li>
+						<li>Inside this text box, type a brief description of the course, its major units, and how performance was measured (e.g. exams, papers, presentations).</li>
+						<li>Inside this text box, write a brief narrative that explains what material you examined and what you learned that allowed you to fulfill the learning outcomes you marked.</li>
+						<li>Inside this text box, clearly describe how your performance was measured in the course. Include any papers, tests, and other documents that demonstrate what you learned in this class. Insert these documents using the Add Media &arr; Insert Document feature directly above this text box.</li></ol>";
         	break;
         case 'related_life':
             $content = "Concise description of the activity:<br>
