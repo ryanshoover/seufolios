@@ -26,16 +26,28 @@ function insert_help($help_key) {
 //inserts the help icon
 	do_action('enable_help_hook'); //lets us use inline help
 	
+	global $wpdb;
+	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts"; 
+	$sql = "SELECT content FROM $help_table_name WHERE help_key='" .$help_key ."'";
+	$results = $wpdb->get_results($sql);
+	$help_text = $results[0]->content;
+	
 	$img_path = (trailingslashit( plugin_dir_url( __FILE__ ) )) .'help/questionmark.png';
-	echo "<img src='$img_path' class='help_button' onclick='showHelp(this, \"$help_key\");'>";
+	echo "<img src='$img_path' class='help_button' onMouseOver='showHelp(this);' onMouseOut='hideHelp(this);'><div class='help_text'>" .$help_text ."</div>";
 }
 
 function return_help($help_key) {
-//inserts the help icon
+	//inserts the help icon
 	do_action('enable_help_hook'); //lets us use inline help
 	
+	global $wpdb;
+	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts"; 
+	$sql = "SELECT content FROM $help_table_name WHERE help_key='" .$help_key ."'";
+	$results = $wpdb->get_results($sql);
+	$help_text = $results[0]->content;
+	
 	$img_path = (trailingslashit( plugin_dir_url( __FILE__ ) )) .'help/questionmark.png';
-	return "<img src='$img_path' class='help_button' onclick='showHelp(this, \\\"" .$help_key ."\\\");'>";    //'" .$help_key ."');'>";
+	return "<img src='$img_path' class='help_button' onMouseOver='showHelp(this);' onMouseOut='hideHelp(this);'><div class='help_text'>" .$help_text ."</div>";
 }
 
 function enable_help() {
@@ -43,11 +55,7 @@ function enable_help() {
 	$path = (trailingslashit( plugin_dir_url( __FILE__ ) )) .'help/';
 	wp_enqueue_style('help_css', $path. 'styles.css', false, '1.1','all');
 	wp_enqueue_script('help_js', $path. 'scripts.js', false, '1.1', false);
-}
-
-function call_help($help_key){
-	// not used
-	do_action('insert_help_hook');
+	wp_enqueue_script('jquery');
 }
 
 function replace_help() {

@@ -27,12 +27,12 @@ function seu_get_wp_config_path()
 	
 	return false;
 }
-$config_path = seu_get_wp_config_path();
+$wp_path = seu_get_wp_config_path();
 
 //load WP features
-include_once($config_path .'/wp-config.php');
-include_once($config_path .'/wp-load.php');
-include_once($config_path .'/wp-includes/wp-db.php');
+include_once($wp_path .'/wp-config.php');
+include_once($wp_path .'/wp-load.php');
+include_once($wp_path .'/wp-includes/wp-db.php');
 
 //load eval sections
 global $wpdb;
