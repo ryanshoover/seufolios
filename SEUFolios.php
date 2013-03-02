@@ -3,7 +3,7 @@
 Plugin Name: SEU Folios
 Description: Adds customization for eportfolio functions
 Author: Ryan Hoover
-Version: 2.2.2
+Version: 2.3
 Author URI: http://ryanhoover.net
 
 Copyright 2013
@@ -12,6 +12,8 @@ What's new
 - network admin moved to network settings submenu
 - reworked network admin screens
 - user roles changed to match edublogs roles
+- site option only controls end-user features
+- modification of WP roles is disabled
 */
 
 
