@@ -468,7 +468,7 @@ function control_dept_options() {
         </div>
         <div id="dept_form">
             <h3>Add New Department</h3>
-            <form name="add_new" id="add_new" method="POST">
+            <form name="add_new_dept" id="add_new_dept" method="POST">
                 <label for="new_abbr">Dept. Abbreviation</label> <input type="text" name="new_abbr" maxlength="4">
                 <label for="new_title">Dept. Title</label> <input type="text" name="new_title" >
                 <br><br>
@@ -499,7 +499,7 @@ function control_dept_options() {
     </div>
     
     <script>
-		jQuery('#add_new').submit(function() {
+		jQuery('#add_new_dept').submit(function() {
 		  var b = jQuery(this).serialize();
 		  
 		  jQuery.post( ajaxurl, 
@@ -587,7 +587,7 @@ function control_course_list() {
         </div>
         <div id="courses_form">
             <h3>Add New Course</h3>
-            <form name="add_new" id="add_new" method="POST">
+            <form name="add_new_course" id="add_new_course" method="POST">
                 <label for="new_num">Course Number</label> <input type="text" name="new_num">
                 <label for="new_title">Course Title</label> <input type="text" name="new_title" >
                 <br><br>
@@ -611,7 +611,7 @@ function control_course_list() {
 			
 		});
 		
-		jQuery('#add_new').submit(function() {
+		jQuery('#add_new_course').submit(function() {
 		  
 		  var b = jQuery(this).serialize() + '&dept_id=' + jQuery('#dept_select').attr('value');
 		  jQuery.post( ajaxurl, 

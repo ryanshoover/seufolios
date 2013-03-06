@@ -3,7 +3,7 @@
 Plugin Name: SEU Folios
 Description: Adds customization for eportfolio functions
 Author: Ryan Hoover
-Version: 2.3
+Version: 2.3.1
 Author URI: http://ryanhoover.net
 
 Copyright 2013
