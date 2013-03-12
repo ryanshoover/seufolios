@@ -24,7 +24,6 @@ if(get_option('enable_seufolios_features') != 0) {
 
 	//signup disclaimer
 	add_action('signup_extra_fields', 'add_disclaimer');
-	//add_filter('wpmu_validate_user_signup', 'check_fields');
 	
 	//course and doc_type taxonomies
 	add_action( 'init', 'add_taxonomies' ); 
@@ -47,22 +46,14 @@ if(get_option('enable_seufolios_features') != 0) {
 	
 	//post visibility
 	require_once($plugin_url .'post_visibility.php');
+	
+	//page flipper
+	require_once($plugin_url .'page-flipper.php');
+	new page_flipper_init(); //create init class
 
 } //end if get_option
 
 //***Functions
-
-//test for stedwards.edu email
-/* commented out - not needed in LDAP setup
-function check_fields($result) {
-	$errors = new WP_Error();
-	$user_email_explode = explode('@', $result['user_email']);
-	 if( !preg_match("/stedwards.edu/i", $user_email_explode[1]) ) {
-		$result['errors']->add('user_email', '<strong>ERROR</strong>: You have to use a stedwards.edu email address to create an account.');
-	 }
-	 return $result;
-}
-*/
 
 function add_disclaimer() {
 $output = '<p style="font-size:0.9em;margin-left:2em;">*Note, you <em>must</em> use a stedwards.edu email address to register.<br />You can change it after you\'ve set up your account.</p>';

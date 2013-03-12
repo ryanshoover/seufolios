@@ -38,6 +38,8 @@ class phmagick{
     private $destination = '';
     private $imageMagickPath = '';
     private $imageQuality = 80 ;
+	private $density = 72;
+	private $imageSize = '1000x1294';
 
     public $debug = false;
     private $log = array();
@@ -101,6 +103,15 @@ class phmagick{
      function getImageMagickPath (){
         return $this->imageMagickPath;
     }
+	
+	//-----------------
+	  function getPageCount() {
+		  $source = $this->getSource();
+		  //$count = $this->execute("identify -format %n " .$source);
+		  $count = exec( $this->getImageMagickPath() ."identify -format %n " .$source);
+		  return $count;
+	}
+	
     //-----------------
      function setImageQuality($value){
         $this->imageQuality = intval($value);
@@ -109,6 +120,26 @@ class phmagick{
 
      function getImageQuality(){
         return $this->imageQuality;
+    }
+	
+	//-----------------
+     function setDensity($value){
+        $this->density = intval($value);
+        return $this;
+    }
+
+     function getDensity(){
+        return $this->density;
+    }
+	
+	//-----------------
+     function setImageSize($value){
+        $this->imageSize = ($value);
+        return $this;
+    }
+
+     function getImageSize(){
+        return $this->imageSize;
     }
 
     //-----------------
@@ -183,7 +214,8 @@ class phmagick{
             $cmd= str_replace    ('(','\(',$cmd);
             $cmd= str_replace    (')','\)',$cmd);
         }
-        exec( $cmd .' 2>&1', $out, $ret);
+        //exec( $cmd .' 2>&1', $out, $ret);
+		exec( $cmd .' 2>&1', $out, $ret);
 
         if($ret != 0)
             if($this->debug) trigger_error (new phMagickException ('Error executing "'. $cmd.'" <br>return code: '. $ret .' <br>command output :"'. implode("<br>", $out).'"' ), E_USER_NOTICE );
