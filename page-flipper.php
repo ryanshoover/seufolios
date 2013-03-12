@@ -374,6 +374,7 @@ class page_flipper{
 		
 		$post = get_post($post_id);
 		$post_path = $post->post_content;
+		$post_name = $post->post_name;
 		$post_pdf_a = glob($post_path . '/*.pdf');
 		$post_pdf = str_replace($_SERVER['DOCUMENT_ROOT'], '', $post_pdf_a[0]);
 		$pages = glob($post_path . '/page*.png');
@@ -383,9 +384,7 @@ class page_flipper{
 		$this->load_fancybox();
 		$send_data = json_encode($atts);
 		
-		if($lightbox) {
-			$output = "<a href='" .$myBase ."/insert_doc.php?data=" .$send_data ."' class='fancybox' title='" .$linked_text ."'>" .$linked_text ."</a>";
-			$output .="
+		$output ="
 			<script>
 			jQuery(function ($) {
 				$(function() {
@@ -405,10 +404,14 @@ class page_flipper{
 			});
 			</script>
 			";
+		
+		if($lightbox) {
+			$output .= "<a href='" .$myBase ."/insert_doc.php?data=" .$send_data ."' class='fancybox' title='" .$post_name ."'>" .$linked_text ."</a>";
+			
 			return $output;
 		}
 		
-		$output = "<div id='" .$post->post_name ."-dad' class='booklet-dad' style='width:$width;'>";
+		$output .= "<div id='" .$post->post_name ."-dad' class='booklet-dad' style='width:$width;'>";
 		$output .= "<div id='" .$post->post_name ."-container' class='booklet-container'>";
 		$output .= "<div id='" .$post->post_name ."'>";
 		
@@ -426,7 +429,7 @@ class page_flipper{
 			<div id='booklet-nav'>
 				<img src='$myBase/images/zoom-in.png' id='booklet-in' class='booklet-zoom'>
 				<img src='$myBase/images/zoom-out.png' id='booklet-out' class='booklet-zoom'>";
-		if(!$iframe) $output .= "<a href='" .$myBase ."/insert_doc.php?data=" .$send_data ."' class='fancybox booklet-zoom white' title='" .$linked_text ."'><img src='$myBase/images/fullscreen.png' class='booklet-zoom'></a>";
+		if(!$iframe) $output .= "<a href='" .$myBase ."/insert_doc.php?data=" .$send_data ."' class='fancybox' title='" .$post_name ."'><img src='$myBase/images/fullscreen.png' class='booklet-zoom white'></a>";
 		$output .= "<a href='$post_pdf' class='fancy-box white booklet-zoom'>download</a>";
 		$output .= "<div id='switch-mode' class='fancy-box white booklet-zoom'>view single page</div>";
 		$output .= "
