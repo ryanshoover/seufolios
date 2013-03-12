@@ -1,4 +1,12 @@
 <?php
+/*
+$_POST = array(
+	'key' => 'abcdefg1234567',
+	'dept' => 'ENGW',
+	'startdate' => '2012-10-10 11:11:11',
+	'enddate' 	=> '2013-03-10 11:11:11',
+);
+*/
 
 $key = 'abcdefg1234567';
 if (!ereg($key, $_POST['key'])){
@@ -25,12 +33,12 @@ function seu_get_wp_config_path()
 	
 	return false;
 }
-$path = seu_get_wp_config_path();
+$config_path = seu_get_wp_config_path();
 
 //load WP features
-include_once($path .'/wp-config.php');
-include_once($path .'/wp-load.php');
-include_once($path .'/wp-includes/wp-db.php');
+include_once($config_path .'/wp-config.php');
+include_once($config_path .'/wp-load.php');
+include_once($config_path .'/wp-includes/wp-db.php');
 
 //$user = wp_get_current_user();
 //global $blog_id;
@@ -75,20 +83,25 @@ $evals_o = $wpdb->get_results(
 
 	WHERE submittime > '$startdate' 
 		AND submittime < '$enddate'
+		
+	ORDER BY id
 	"
 );
 
+//filter for dept, add to array
 foreach ( $evals_o as $eval_o ) 
 {
 	$major = get_major($eval_o->studentid);
 	$test['major'] = $major;
 	foreach($depts as $dept) {
-		if ($major == $dept->id) $major_abbr = $dept->abbr;
+		if ($major == $dept->id) { $major_abbr = $dept->abbr; }
 	}
 	
-	if($major_abbr == $query_dept)
-		$evals[] = get_object_vars($eval_o);
+	if($major_abbr == $query_dept) { $evals[] = get_object_vars($eval_o); }
 }
+
+//filter for 1 eval per prof per student
+$evals = super_unique($evals, 'profid', 'studentid');
 
 //convert user_ids to names
 for ($i=0; $i<count($evals); $i++) {
@@ -123,12 +136,17 @@ foreach($sections as $section) {
 $result = serialize( array( 'sections' => $sections, 'questions' => $questions, 'taxes' => $all_taxonomies, 'evals' => $evals) );
 echo $result;
 
+
+
+
+
 //***functions
 //generic function to return user's major
 function get_major($user_id) {
   $user_blogs = get_blogs_of_user($user_id); //!!!!! hard coded to users's 1st blog. Need to add blog id to eval data
-  
-  $major = get_blog_option($user_blogs[0]->id, 'student_major');
+
+  $blog1 = array_shift($user_blogs); //gets first blog in list
+  $major = get_blog_option($blog1->userblog_id, 'student_major');
   if($major === false) $major = get_site_option('seu_default_dept_id');
   
   return $major;
@@ -143,6 +161,22 @@ function get_all_depts() {
 	$results = $wpdb->get_results($sql);
 	
 	return $results;	
+}
+
+// screen duplicates out of multidimensional array
+function super_unique($array,$key1, $key2) {
+	$temp_array = array();
+	foreach ($array as $v) {
+		foreach($temp_array as $k => $temp) {
+			if($v[$key1] == $temp[$key1] && $v[$key2] == $temp[$key2]) {
+				unset($temp_array[$k]);
+			}
+		}
+		$temp_array[] = $v;
+	}
+	
+	$array = array_values($temp_array);
+	return $array;
 }
 
 ?>
