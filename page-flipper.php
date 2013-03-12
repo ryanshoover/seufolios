@@ -522,7 +522,7 @@ class page_flipper{
 	}
 	
 	public function load_booklet_js() {
-		$myBase = plugins_url("", __FILE__);
+		$myBase = plugins_url("", __FILE__) .'/page_flipper';
        // -- Booklet --
         wp_enqueue_script('jqueryui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/jquery-ui.min.js');
         wp_enqueue_script('jqueryeasing', $myBase .'/booklet/jquery.easing.1.3.js');
@@ -531,7 +531,7 @@ class page_flipper{
 	}
 	
 	public function load_fancybox() {
-		$myBase = plugins_url("", __FILE__);
+		$myBase = plugins_url("", __FILE__) .'/page_flipper';
 		wp_enqueue_style('fancyboxcss', $myBase ."/fancybox/jquery.fancybox.css");
 		wp_enqueue_script('fancyboxjs', $myBase ."/fancybox/jquery.fancybox.pack.js");
 		//wp_enqueue_script('fancyboxfullscreenjs', $myBase ."/fancybox/jquery.fullscreen.js");
