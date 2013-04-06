@@ -58,7 +58,7 @@ function setup_folios2eval() {
 	</style>
     <div class="wrap">
     <h2>Select portfolios for evaluation</h2>
-    
+    <p style='max-width:500px;'>Pick all of the portfolios that your department needs to evaluate this round. Once you've picked them, click <em>Set Portfolios</em>. All of the portfolios that you pick will show up on the faculty guide page [INSERT LINK].</p>
     <div id="choose_dept">
         <form name="folios2eval_choose_dept" id="folios2eval_choose_dept">
             <select name="folios2eval_dept_select" id="folios2eval_dept_select">
