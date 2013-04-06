@@ -427,7 +427,7 @@ function meta_box_instruction($d) {
 function control_dept_info() {
 	add_menu_page('SEUFolios Departments', 'Departments', 'manage_options', 'seufolios_departments', 'control_dept_options','' , 21);
 	add_submenu_page( 'seufolios_departments', 'Department Courses', 'Courses', 'manage_options', 'seufolios_departments_subcourses', 'control_course_list' );
-	add_submenu_page( 'seufolios_departments', 'Department Evaluations', 'Evaluations', 'manage_options', 'seufolios_departments_evaluations', 'control_evaluation_questions');
+	add_submenu_page( 'seufolios_departments', 'Department Evaluation Questions', 'Eval Qs', 'manage_options', 'seufolios_departments_evaluations', 'control_evaluation_questions');
 }
 
 function control_dept_options() {

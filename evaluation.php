@@ -18,8 +18,6 @@ add_action('wp_ajax_add_ques_type_submit', 'add_eval_type_save_ajax' );
 add_action('wp_ajax_eval_edit_question_type', 'add_eval_type_edit_ajax' );
 add_action('wp_ajax_eval_delete_question_type', 'add_eval_type_delete_ajax' );
 
-
-
 function toolbar_scripts_method() {
 	$current_user = wp_get_current_user();
 	$user_role = get_user_role($current_user);
@@ -107,11 +105,13 @@ function get_user_role($user) {
 
 } 
 
+require_once('evaluation/folios2eval.php');
+
 //*******************************
 //network admin page
 
 function control_eval_ques() {
-	add_menu_page('SEUFolios Evaluation Questions', 'Eval Questions', 'manage_options', 'seufolios_eval_ques', 'control_eval_ques_options','' , 22);
+	add_menu_page('SEUFolios Evaluation Question Types', 'Eval Q Types', 'manage_options', 'seufolios_eval_ques', 'control_eval_ques_options','' , 22);
 }
 
 function control_eval_ques_options() {
