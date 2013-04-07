@@ -40,15 +40,20 @@ html, body {
 	margin: auto;
 	background-color:#fff;
 }
-
-#navigation, #navigation li {
+#navigation {
+	position:relative;
+	margin:0;
+	padding:0;
+}
+#navigation li {
 	position:relative;
 	margin:0;
 	padding:0;
 	list-style:none;
-	display:inline-block;
+	float:left;
 	cursor:pointer;
 }
+
 #navigation li {
 	padding:5px;
 	margin:0 auto;
@@ -70,6 +75,7 @@ html, body {
 	position:relative;
 	width:97%;
 	height:450px;
+	clear:both;
 	overflow-y:scroll;
 }
 
@@ -85,6 +91,10 @@ html, body {
 }
 
 /*entry setup*/
+
+textarea {
+	max-width:95%;
+}
 
 .container {
 	width:300px;

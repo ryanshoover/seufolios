@@ -113,6 +113,12 @@ foreach($terms_array as $term) {
 }
 $terms = substr($terms, 0, -1);
 
+//create initial value in evaluations table
+$blog = get_bloginfo('wpurl');
+$eval_table_name = 'wp_seufolios_evaluations';
+$results = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $eval_table_name WHERE profid=".$saved_values['profid'] ." AND studentid=".$saved_values['studentid']));
+if(!$results) $results = $wpdb->insert( $eval_table_name, array('profid'=>$saved_values['profid'], 'studentid'=>$saved_values['studentid'], 'siteurl'=>$blog, 'taxonomies'=>$terms) ); 
+
 //create javascript array for saved values
 $script = "\n<script type='text/javascript'>\n
 var values = new Array(";
@@ -137,8 +143,7 @@ echo $script;
     <form name="evaluation" id="evaluation" action="finalSave.php" method="post">
     <input type="hidden" id='profid' name='profid' value='<?php echo $saved_values['profid']; ?>'>
     <input type="hidden" id='studentid' name='studentid' value='<?php echo $saved_values['studentid']; ?>'>
-    <input type="hidden" id='siteurl' name='siteurl' value='<?php echo $saved_values['siteurl']; ?>'>
-    <input type="hidden" id='terms' name='terms' value='<?php echo $terms;  ?>'>
+    <input type="hidden" id='wp_path' name='wp_path' value='<?php echo urlencode($wp_path);  ?>'>
     
     <ul id="navigation">
     	<?php

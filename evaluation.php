@@ -25,11 +25,8 @@ function toolbar_scripts_method() {
 	$site_details = get_blog_details($blog_id, 'siteurl');
 	
 	if($user_role == 'Professor' || $user_role == 'Super_admin') {
-		echo "<script> var siteurl='" .urlencode($site_details->siteurl) ."'; </script>";
-		$plugin_url = plugins_url() .'/SEUFolios/';
 		wp_enqueue_script('seufolios_iframe_script', plugins_url( 'evaluation/js/scripts.js' , __FILE__ ) );
-		wp_register_style( 'prefix-style', plugins_url('evaluation/css/styles.css', __FILE__) );
-		wp_enqueue_style( 'prefix-style' );
+		wp_enqueue_style( 'prefix-style', plugins_url('evaluation/css/styles.css', __FILE__) );
 	}
 }
 
@@ -51,7 +48,7 @@ function toolbar_evaluation( $wp_admin_bar ) {
 	if(count($results) > 0) $submit .= $results[0]->answers;
 	
 	if($user_role == 'Professor' || $user_role == 'Super_admin') {
-		$plugin_url = plugins_url() .'/SEUFolios/';
+		$plugin_url = plugins_url() .'/seufolios/';
 		  
 		$args = array(
 		  'id' => 'seufolios-evaluation',
