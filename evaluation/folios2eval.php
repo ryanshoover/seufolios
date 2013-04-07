@@ -3,6 +3,7 @@
 register_activation_hook( $core_plugin_url, 'create_eval_day_sqltable' ); //portfolios to evaluate
 add_action('network_admin_menu', 'folios2eval');
 add_action('wp_ajax_folios2eval_select_dept', 'folios2eval_deptselect');
+add_shortcode( 'folios2eval', 'folios2eval_profpage' );
 
 function create_eval_day_sqltable() {
 	global $wpdb;
@@ -122,6 +123,39 @@ function folios2eval_deptselect() {
 	$result .= "<br><input type='submit' value='Set Portfolios'></form>";
 	echo $result;
 	die();
+}
+
+function folios2eval_profpage($atts) {
+	global $wpdb;
+	$user = wp_get_current_user();
+	$major = get_the_user_major($user->ID);
+	$eval_table_name = 'wp_seufolios_evaluations';
+	
+	$max_evals = 2; //!!HARD CODED!!!
+	
+	$return = '';
+	
+	$folio_ids = $wpdb->get_results("SELECT blogid FROM wp_seufolios_folios2eval WHERE deptid=".$major);
+	foreach($folio_ids as $id) 
+		$folios[] = get_blog_details($id->blogid);
+	
+	$return .= "<style>.folios li{color: #666;}</style>\n";
+	
+	$time = date('Y-m-d H:i:s', time()-7776000);	
+	$sql = "SELECT id FROM $eval_table_name WHERE profid=".$user->ID ." AND submittime>'".$time."'";
+	$result = $wpdb->get_results($sql);
+	$return .= "<p>You've completed <strong>".$wpdb->num_rows."</strong> evaluations so far this semester.</p>\n";
+	
+	$return .= "<p>These portfoios need to be evaluated. Take your pick!</p>\n";
+	$return .= "<ul class='folios'>\n";
+	foreach($folios as $folio) {
+		$student = get_user_by('email',get_blog_option($folio->blog_id,'admin_email'));
+		$result = $wpdb->get_results("SELECT id FROM $eval_table_name WHERE studentid=".$student->ID);
+		if( $max_evals-$wpdb->num_rows > 0) $return .= "<li><a href='http://".$folio->domain .$folio->path ."' target='_blank'>".$student->user_nicename." - ".get_blog_option($folio->blog_id,'blogname')."</a>&nbsp;&nbsp;(Needs <strong>" .($max_evals-$wpdb->num_rows) ."</strong> more evaluations)</li>\n";
+	}
+	$return .= "</ul>";
+	
+	return $return;
 }
 
 function get_folios($dept_id) {
