@@ -3,7 +3,7 @@
 Plugin Name: SEU Folios
 Description: Adds customization for eportfolio functions
 Author: Ryan Hoover
-Version: 2.3.1
+Version: 2.3.2
 Author URI: http://ryanhoover.net
 
 Copyright 2013
@@ -14,6 +14,7 @@ What's new
 - user roles changed to match edublogs roles
 - site option only controls end-user features
 - modification of WP roles is disabled
+- Default WP roles are hidden in the page visibility settings
 */
 
 
