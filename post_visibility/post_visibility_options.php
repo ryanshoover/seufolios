@@ -179,6 +179,7 @@ EOT;
 	$social_access_control_for = 'Default Access';
     global $wp_roles;
     $roles = $wp_roles->role_names;
+    unset($roles['author'], $roles['contributor'], $roles['subscriber'], $roles['editor']);
     $roles[] = 'World'; //add world (the non-logged-in option) to the roles array
 
  

@@ -330,6 +330,7 @@ function edit_post_controls() {
 	
 	global $wp_roles;
 	$roles = $wp_roles->role_names;
+	unset($roles['author'], $roles['contributor'], $roles['subscriber'], $roles['editor']); //removes core roles, not used by students
 	$roles[] = 'World';  //add 'world' (the non-logged-in option) to the array
 
 	foreach ($roles as $role) {
