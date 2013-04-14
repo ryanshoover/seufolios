@@ -185,6 +185,7 @@ echo $script;
 
     <div id="buttons">
         <button value='submit'>Submit final evaluation</button>
+        <img src="trash.png" id="delete-entry">
         <div id='savestatus'>&nbsp;</div>
     </div>
     </form>
@@ -220,8 +221,7 @@ function setupSliders() {
 }
 
 function setupEventListeners() {
-	jQuery(':input').change(function() { updateDisplay(this); });
-	jQuery(':input').change(function() { startTimer(this);    });
+	jQuery(':input').change(function() { updateDisplay(this); startTimer(this); });
 }
 
 function updateDisplay(input) {
@@ -250,11 +250,25 @@ function sendAjax(input) {
 
 }
 
+function setupTrashcan() {
+	jQuery("#delete-entry").click(function() {
+		document.getElementById('savestatus').innerHTML = "deleting...";
+		dataString = jQuery('#evaluation').serialize() + "&deleteIcon=1";
+		jQuery.ajax({  
+		  type: "GET",  
+		  url: "tempSave.php",  
+		  data: dataString 
+		}).done(function( msg ) { document.getElementById('savestatus').innerHTML = msg; parent.location.reload(); });
+		return false;
+	});
+}
+
 var ajaxTimer;
 var inputs = new Array();
 var dataString = '';
 setupSliders();
 setupEventListeners();
+setupTrashcan();
 </script>
 
 

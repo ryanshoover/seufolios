@@ -157,6 +157,13 @@ textarea {
 	height:1.1em;	
 }
 
+#delete-entry {
+	float:right;
+	height:20px;
+	cursor:pointer;
+	margin-right:1em;
+}
+
 @media all and (max-height: 500px) {
 #eval_iframe{height:450px;}
 #sections{height:375px;}
