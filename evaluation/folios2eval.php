@@ -59,7 +59,8 @@ function setup_folios2eval() {
 	</style>
     <div class="wrap">
     <h2>Select portfolios for evaluation</h2>
-    <p style='max-width:500px;'>Pick all of the portfolios that your department needs to evaluate this round. Once you've picked them, click <em>Set Portfolios</em>. All of the portfolios that you pick will show up on the faculty guide page [INSERT LINK].</p>
+    <p style='max-width:500px;'>Pick all of the portfolios that your department needs to evaluate this round. All of the portfolios that you pick will show up on the faculty guide page.</p>
+    <p>Create a guide page by adding the shortcode to a page on the main site.<pre>[folios2eval]</pre>Just be sure to hide the page from everyone but Professors</p>
     <div id="choose_dept">
         <form name="folios2eval_choose_dept" id="folios2eval_choose_dept">
             <select name="folios2eval_dept_select" id="folios2eval_dept_select">
@@ -139,21 +140,36 @@ function folios2eval_profpage($atts) {
 	foreach($folio_ids as $id) 
 		$folios[] = get_blog_details($id->blogid);
 	
-	$return .= "<style>.folios li{color: #666;}</style>\n";
+	$return .= "<style>.folios li{color: #666;}.callout-right{font-size:0.85em;margin:2em;padding:0.5em;float:right; background-color:white;border:thin solid #ccc; width:250px;max-width:40%;box-shadow: 5px 5px 3px #888888;}</style>\n";
 	
 	$time = date('Y-m-d H:i:s', time()-7776000);	
 	$sql = "SELECT id FROM $eval_table_name WHERE profid=".$user->ID ." AND submittime>'".$time."'";
 	$result = $wpdb->get_results($sql);
-	$return .= "<p>You've completed <strong>".$wpdb->num_rows."</strong> evaluations so far this semester.</p>\n";
+	$return .= "<p>Hi $user->user_nicename,</p><p>";
+	if($wpdb->num_rows) {$return .= "Congratulations! ";}
+	$return .= "You've completed <strong>".$wpdb->num_rows."</strong> evaluations so far this semester";
+	$sql = "SELECT id FROM $eval_table_name WHERE profid=".$user->ID;
+	$result = $wpdb->get_results($sql);
+	$return .= " (and <strong>".$wpdb->num_rows."</strong> all time).</p>\n<hr>\n";
 	
-	$return .= "<p>These portfoios need to be evaluated. Take your pick!</p>\n";
-	$return .= "<ul class='folios'>\n";
+	$temp_return = "<p class='callout-right'>When you're ready to give feedback on the portfolio click the <em>Evaluate</em> link in the black admin bar at the top of the screen.<br><br>Oh, and once you've opened the evaluation form please either complete the evaluation or delete your feedback. Otherwise we assume you'll finish it and won't assign it to anyone else.</p>
+	<p>There's still work to be done, though. The portfoios below need to be evaluated. Mind doing one?</p>\n<ul class='folios'>\n";
+	$count = 0;
 	foreach($folios as $folio) {
 		$student = get_user_by('email',get_blog_option($folio->blog_id,'admin_email'));
 		$result = $wpdb->get_results("SELECT id FROM $eval_table_name WHERE studentid=".$student->ID);
-		if( $max_evals-$wpdb->num_rows > 0) $return .= "<li><a href='http://".$folio->domain .$folio->path ."' target='_blank'>".$student->user_nicename." - ".get_blog_option($folio->blog_id,'blogname')."</a>&nbsp;&nbsp;(Needs <strong>" .($max_evals-$wpdb->num_rows) ."</strong> more evaluations)</li>\n";
+		if( $max_evals-$wpdb->num_rows > 0) {
+			$temp_return .= "<li><a href='http://".$folio->domain .$folio->path ."' target='_blank'>".$student->user_nicename." - ".get_blog_option($folio->blog_id,'blogname')."</a>&nbsp;&nbsp;(Needs <strong>" .($max_evals-$wpdb->num_rows) ."</strong> more evaluation" .($max_evals-$wpdb->num_rows > 1 ? "s)" : ")") ."</li>\n";
+			$count++;
+		}
 	}
-	$return .= "</ul>";
+	$temp_return .= "</ul>";
+	
+	if($count) {
+		$return .= $temp_return;
+	} else {
+		$return .= "<p>Looks like the portfolios have all been evaluated this year. You're done!</p>";
+	}
 	
 	return $return;
 }
