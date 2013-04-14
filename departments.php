@@ -876,8 +876,11 @@ function control_evaluation_questions() {
 	<style>
 	div.main_group {
 		float:left;
-		margin:0 2em 0 0;	
+		margin:0 1% 0 0;	
 	}
+	div.wrap {width:95%; }
+	div#sections {width: 30%; }
+	div#questions {width: 68%; }
 	table.seufolios { border-spacing:0; }
 	table.seufolios th, table.seufolios td {
 		text-align:left;
@@ -898,6 +901,9 @@ function control_evaluation_questions() {
 		background-color:#FFF !important; 
 		font-weight:bold;
 	}
+	table.seufolios tr.editing td {
+		padding: 0.25em 0.25em !important;
+	}
 	table.seufolios td.question { width:200px; }
 	td.desc {
 		font-size:0.8em;
@@ -905,7 +911,7 @@ function control_evaluation_questions() {
 		color:gray;
 	}
 	td.title {padding-left:5px;}
-	
+	td.butts {width:82px;}
 	div#sections_form, div#questions_form {	display:none; }
 	form * {vertical-align:middle;}
 	form.inline * {padding:0; margin:0; height:20px;}
@@ -966,8 +972,10 @@ function control_evaluation_questions() {
                     </tr><tr>
                     <td class="align_right"><label for="ques_type">Type</label></td><td><select name="ques_type">
                     <?php
+					$c=0;
 					foreach ($q_types as $q) {
-						echo "<option value='$q->id'>$q->displayName</option>\n";	
+						$c++;
+						echo "<option value='$q->id'".($c==1 ? " selected" : "").">$q->displayName</option>\n";	
 					}
 					?>
                     </select></td>
@@ -979,8 +987,8 @@ function control_evaluation_questions() {
                     <td class="align_right"></td><td><input type="submit" value="Add Section" /></td>
                     </tr></table>
                 </form>
-            </div>
-        </div>
+            </div> <!--questions-form-->
+        </div>  <!--questions-->
     </div>
     
     <script>
@@ -1022,13 +1030,14 @@ function control_evaluation_questions() {
 		//Edit a section
 		function edit_section(sec_id, sec_order) {
 			var tr = document.getElementById('secrow_' + sec_id);
+			jQuery("#secrow_" + sec_id).toggleClass('editing');
 			var td_title = tr.getElementsByClassName('title');
 			var old_title = td_title[0].innerHTML;
 			var td_desc = tr.getElementsByClassName('desc');
 			var old_desc = td_desc[0].innerHTML;
 			var innerHTML = "<td><input type='hidden' name='sec_id' id='sec_id' value='" + sec_id + "'>" +
-							"<input type='text' name='sec_title' id='sec_title' size='10' value='" +old_title+ "'></td>" +
-							"<td><input type='text' name='sec_description' id='sec_description' value='" +old_desc+ "'></td>" +
+							"<input type='text' name='sec_title' id='sec_title' size='8' value='" +old_title+ "'></td>" +
+							"<td><textarea name='sec_description' id='sec_description' cols='12' rows='2'>" +old_desc+ "</textarea>" +
 							"<td><input type='text' name='sec_order' id='sec_order' size='2' value='"+sec_order+"'>" +
 							"<button type='submit' onclick='edit_sec_submit();'>Done</button> &nbsp;&nbsp; " +
 							"<button id='delete_"+sec_id+"' class='delete_button' type='button' onclick='delete_section("+sec_id+")'>Delete</button></td>";
@@ -1039,7 +1048,7 @@ function control_evaluation_questions() {
 		
 		//Submit the Edit Section
 		function edit_sec_submit() {
-		  
+		  jQuery(".seufolios tr").removeClass('editing');
 		  var b = 'sec_id=' +document.getElementById('sec_id').value + '&sec_title=' +document.getElementById('sec_title').value + '&sec_description=' +document.getElementById('sec_description').value + '&sec_order=' +document.getElementById('sec_order').value + '&dept_id=' + jQuery('#dept_select').attr('value');
 		  jQuery.post( ajaxurl, 
 		  		  {
@@ -1114,6 +1123,7 @@ function control_evaluation_questions() {
 		//Edit a question
 		function edit_question(q_id, q_order) {
 			var tr = document.getElementById('qrow_' + q_id);
+			jQuery("#qrow_" + q_id).toggleClass('editing');
 			var td_slug = tr.getElementsByClassName('slug');
 			var old_slug = td_slug[0].innerHTML;
 			var td_question = tr.getElementsByClassName('question');
@@ -1125,7 +1135,7 @@ function control_evaluation_questions() {
 			
 			var innerHTML = "<td><input type='hidden' name='q_id' id='q_id' value='" + q_id + "'>" +
 							"<input type='text' name='q_slug' id='q_slug' size='10' value='" +old_slug+ "'></td>" +
-							"<td><input type='text' name='q_question' id='q_question' value='" +old_question+ "'></td>" +
+							"<td><textarea name='q_question' id='q_question' rows='2' cols='25'>" +old_question+ "</textarea>" +
 							"<td><select name='q_type' id='q_type'><?php
 					foreach ($q_types as $q) {
 						echo "<option value='$q->id'>$q->displayName</option>";	
@@ -1142,7 +1152,7 @@ function control_evaluation_questions() {
 		
 		//Submit the Edit Questiob
 		function edit_question_submit() {
-		  
+		  jQuery(".seufolios tr").toggleClass('editing');
 		  var b = 'id=' +document.getElementById('q_id').value + '&slug=' +document.getElementById('q_slug').value + '&question=' + document.getElementById('q_question').value + '&type=' +document.getElementById('q_type').value + '&enabled=' +document.getElementById('q_enabled').checked + '&q_order=' +document.getElementById('q_order').value + '&sec_id=' + jQuery('#sec_id').attr('value');
 		  jQuery.post( ajaxurl, 
 		  		  {
@@ -1185,9 +1195,10 @@ function create_sec_table($dept_id) {
 		$result .= "<tr id='secrow_$section->id'>
 					<td class='title'>$section->title</td>
 					<td class='desc'>$section->description</td>
-					<td>
+					<td class='butts'>
 					    <button id='edit_$section->id' class='edit_button' type='button' onclick='edit_section($section->id, $section->order_loc);'>Edit</button> &nbsp;&nbsp;
-						<button id='show_questions_$section->id' class='show_questions_button' type='button' onclick='show_questions($section->id, this)'>&raquo;</button></td></tr>\n";	
+						<button id='show_questions_$section->id' class='show_questions_button' type='button' onclick='show_questions($section->id, this)'>&raquo;</button>
+					</td></tr>\n";	
 	}
 	
 	$result .= "</table>";

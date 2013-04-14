@@ -117,8 +117,7 @@ function control_eval_ques_options() {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
 	?>
-	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js?ver=1.3.2'></script>
-    <style>
+	<style>
 	table.seufolios {
 		border-spacing:0;
 	}
