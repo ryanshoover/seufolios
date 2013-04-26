@@ -207,17 +207,23 @@ function setupSliders() {
 	for(i=0; i<divs.length; i++) {
 		if (html5) {
 			inputs[i].setAttribute("type", "range");
-			inputs[i].setAttribute('min', '1');
+			//if n/a option, set the min to 0
+			jQuery(inputs[i]).hasClass('na-option') ? inputs[i].setAttribute('min', '0') :inputs[i].setAttribute('min', '1');
 			inputs[i].setAttribute('max', '6');
 			inputs[i].setAttribute('step', '1');
 			inputs[i].className += ' html5slider';
 			divs[i].className += ' html5div';
 		}
 		else {
+			in_val = inputs[i].value;
 			sliders.push( new Slider(divs[i], inputs[i]) );
-			if( inputs[i].value ) sliders[i].setValue(inputs[i].value); //set slider to saved input value
+			if( jQuery(inputs[i]).hasClass('na-option') ) sliders[i].setMinimum(0);
+			sliders[i].setValue(in_val); //set slider to saved input value
 		}
 	}
+	
+	//convert 0 to n/a
+	jQuery("div.na-option").each(function(i) { if(jQuery(this).html()=='0') jQuery(this).html('n/a'); });
 }
 
 function setupEventListeners() {
@@ -227,7 +233,12 @@ function setupEventListeners() {
 function updateDisplay(input) {
 	var inputID = input.id.toString();
 	var displayID = inputID.substr(0, inputID.length-5) + 'displayvalue';
-	jQuery('#'+displayID).html(input.value);
+	
+	if(jQuery('#'+displayID).hasClass('na-option') && input.value==0) {
+		jQuery('#'+displayID).html('n/a');
+	} else {
+		jQuery('#'+displayID).html(input.value);
+	}
 }
 
 function startTimer(input) {
