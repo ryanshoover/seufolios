@@ -4,7 +4,7 @@ $_POST = array(
 	'key' => 'abcdefg1234567',
 	'dept' => 'ENGW',
 	'startdate' => '2012-10-10 11:11:11',
-	'enddate' 	=> '2013-03-10 11:11:11',
+	'enddate' 	=> '2013-05-10 11:11:11',
 );
 */
 
@@ -57,7 +57,7 @@ while ( $loop->have_posts() ) : $loop->the_post();
 	}
 	$all_taxonomies[] = $this_tax;
 endwhile;
-
+//print_r($all_taxonomies);
 
 //***********
 //GET Evaluations
@@ -135,7 +135,8 @@ foreach($sections as $section) {
 //***return results
 $result = serialize( array( 'sections' => $sections, 'questions' => $questions, 'taxes' => $all_taxonomies, 'evals' => $evals) );
 echo $result;
-
+//$printable = unserialize($result);
+//print_r($printable);
 
 
 
