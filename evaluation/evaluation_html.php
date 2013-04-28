@@ -7,16 +7,13 @@
 <body onLoad="showSection(0);">
 <meta name="viewport" content="initial-scale=1.0">
 <?php 
-
 function seu_get_wp_config_path()
 {
     $base = dirname(__FILE__);
-   
 	if (@file_exists($base."/wp-config.php"))
     {
         return $base;
     } 
-	
 	while($base != '/') {
 		$base = dirname($base);
 		if (@file_exists($base."/wp-config.php"))
@@ -24,7 +21,6 @@ function seu_get_wp_config_path()
 			  return $base;
 		  }
 	}
-	
 	return false;
 }
 $wp_path = seu_get_wp_config_path();
@@ -97,27 +93,30 @@ if ($major_abbr == 'RATS') {
 	}
 }
 
-//Load all taxonomies
-$args=array(
-  'public'   => true,
-  '_builtin' => false
-  
-); 
+//Load all custom taxonomies
+$args=array( 'public' => true, '_builtin' => false ); 
 $output = 'names'; // or objects
 $operator = 'and'; // 'and' or 'or'
 $taxonomies=get_taxonomies($args,$output,$operator);
 $terms_array=get_terms($taxonomies);
-$terms = '';
 foreach($terms_array as $term) {
-	$terms .= $term->name .":" .$term->count ."~";
+	$terms[$term->taxonomy][$term->name] = $term->count;
 }
-$terms = substr($terms, 0, -1);
 
 //create initial value in evaluations table
 $blog = get_bloginfo('wpurl');
 $eval_table_name = 'wp_seufolios_evaluations';
 $results = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $eval_table_name WHERE profid=".$saved_values['profid'] ." AND studentid=".$saved_values['studentid']));
-if(!$results) $results = $wpdb->insert( $eval_table_name, array('profid'=>$saved_values['profid'], 'studentid'=>$saved_values['studentid'], 'siteurl'=>$blog, 'taxonomies'=>$terms) ); 
+if(!$results) $results = $wpdb->insert( $eval_table_name, array('profid'=>$saved_values['profid'], 'studentid'=>$saved_values['studentid'], 'siteurl'=>$blog, 'taxonomies'=> serialize($terms) ) ); 
+
+//set up favorites star
+$star_table_name = "wp_seufolios_starred";
+$profidsS = $wpdb->get_var( $wpdb->prepare("SELECT profids FROM $star_table_name WHERE blogurl='".$blog."' AND deptid=" .$dept_id ) );
+if($profidsS) {
+	$profids = unserialize($profidsS);
+	if( ($key = array_search($saved_values['profid'], $profids)) !== false) $favorite = true;
+	else $favorite = false;
+} else $favorite = false;
 
 //create javascript array for saved values
 $script = "\n<script type='text/javascript'>\n
@@ -185,7 +184,8 @@ echo $script;
 
     <div id="buttons">
         <button value='submit'>Submit final evaluation</button>
-        <img src="trash.png" id="delete-entry">
+        <img src="trash.png" id="delete-entry" class="icon">
+        <div id="star-entry" class="icon<?php if($favorite) echo ' starred'; ?>" title="Mark as favorite"></div>
         <div id='savestatus'>&nbsp;</div>
     </div>
     </form>
@@ -273,13 +273,33 @@ function setupTrashcan() {
 		return false;
 	});
 }
+function setupStar() {
+	jQuery("#star-entry").hover(function() {$(this).css('background-position-y', '-20px');}, function(){$(this).css('background-position-y', '0'); });
+	jQuery("#star-entry").click(function() { 
+		document.getElementById('savestatus').innerHTML = "starring...";
+		dataString = "starIcon=" + starIcon + "&blogurl=<?php echo urlencode($blog); ?>&deptid=<?php echo $dept_id; ?>&" +jQuery('#evaluation').serialize();
+		jQuery.ajax({  
+		  type: "GET",  
+		  url: "tempSave.php",  
+		  data: dataString 
+		}).done(function( msg ) { 
+			document.getElementById('savestatus').innerHTML = msg; 
+			jQuery("#star-entry").toggleClass('starred'); 
+			if(starIcon == 0) {starIcon = 1; }
+			else {starIcon = 0; }
+		  });
+		return false;
+	 });
+}
 
 var ajaxTimer;
 var inputs = new Array();
 var dataString = '';
+var starIcon = <?php if($favorite) echo 0; else echo 1; ?>;
 setupSliders();
 setupEventListeners();
 setupTrashcan();
+setupStar();
 </script>
 
 

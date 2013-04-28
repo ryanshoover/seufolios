@@ -157,12 +157,17 @@ textarea {
 	height:1.1em;	
 }
 
-#delete-entry {
+.icon {
 	float:right;
 	height:20px;
+	width:20px;
+	overflow:hidden;
 	cursor:pointer;
 	margin-right:1em;
 }
+
+#star-entry { background: url('../star.png') 0 0; }
+#star-entry.starred { background-position: 20px 0; }
 
 @media all and (max-height: 500px) {
 #eval_iframe{height:450px;}

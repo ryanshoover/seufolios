@@ -79,6 +79,19 @@ function create_eval_sqltable() {
 	);";
 	
 	dbDelta($sql_eval);
+	
+	$eval_table_name = "wp_seufolios_starred"; 
+   
+	$sql_eval = "CREATE TABLE $eval_table_name (
+	  id mediumint(9) NOT NULL AUTO_INCREMENT,
+	  blogurl mediumtext NOT NULL,
+	  deptid mediumint(9),
+	  profids mediumtext,
+	  submittime timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	  UNIQUE KEY id (id)
+	);";
+	
+	dbDelta($sql_eval);
 }
 
 function get_user_role($user) { 

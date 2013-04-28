@@ -171,7 +171,35 @@ function folios2eval_profpage($atts) {
 		$return .= "<p>Looks like the portfolios have all been evaluated this year. You're done!</p>";
 	}
 	
+	//favorites
+	$star_table_name = "wp_seufolios_starred";
+	$portfolios = $wpdb->get_results( "SELECT * FROM $star_table_name WHERE deptid=$major" );
+	if($portfolios) {
+		$return .= "<h2>Department's Favorites</h2>\n<ul>";
+		//$return .= print_r($portfolios, true);
+		foreach ($portfolios as $p) {
+			$profs = unserialize($p->profids);
+			$p_url = parse_url($p->blogurl);
+			if(strlen($p_url['path']) ) {
+				if(substr($p_url['path'], -1) != '/') $p_url['path'] = $p_url['path'] .'/';
+				$p_blog = get_blog_details( get_blog_id_from_url($p_url['host'], $p_url['path']) );
+			} else $p_blog = get_blog_details( get_blog_id_from_url($p_url['host']) );
+			$plist[]['txt'] = "<li><a href='$p->blogurl'>$p_blog->blogname</a> (" .count($profs) ." favorites)</li>";
+			$plist[]['count'] = count($profs);
+		}
+		usort($plist, "cmp_plist");
+		foreach($plist as $pl) { $return .= $pl['txt']; }
+		$return .= "</ul>";
+	}
+	
 	return $return;
+}
+
+function cmp_plist($a, $b) {
+    if ($a == $b) {
+        return 0;
+    }
+    return ($a < $b) ? -1 : 1;
 }
 
 function get_folios($dept_id) {
