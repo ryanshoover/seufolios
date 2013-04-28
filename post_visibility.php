@@ -333,7 +333,7 @@ function hide_comment($text)
 	global $current_user;
 	$user_role = get_the_user_role($current_user->user_login);
 
-	$comment_can_read = get_option(user_comment_visible, 'deny');
+	$comment_can_read = get_option('user_comment_visible', 'deny');
 	
 	if (strpos($_SERVER['REQUEST_URI'], '/wp-admin/') == true)
 		return $text;

@@ -39,7 +39,7 @@ function toolbar_evaluation( $wp_admin_bar ) {
 
 	$current_user = wp_get_current_user();
 	$user_role = get_user_role($current_user);
-	$admin_id = get_user_id_from_string( get_blog_option($current_blog->blog_id, 'admin_email'));
+	$admin_id = get_user_id_from_string( get_blog_option(get_current_blog_id(), 'admin_email'));
 	$submit = "profid=$current_user->id" ."&" ."studentid=$admin_id" ."&";
 
 	$sql = "SELECT answers FROM $eval_table_name WHERE profid=$current_user->id and studentid=$admin_id";
