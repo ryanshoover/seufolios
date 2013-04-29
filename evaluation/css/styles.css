@@ -107,6 +107,9 @@ textarea {
 	height:1.2em;
 	margin-top:5px;
 }
+.low.indent {
+	margin-left: 50px;
+}
 
 .high {
 	width:auto;
@@ -171,5 +174,4 @@ textarea {
 
 @media all and (max-height: 500px) {
 #eval_iframe{height:450px;}
-#sections{height:375px;}
-}
+#section
