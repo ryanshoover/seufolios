@@ -1,53 +1,35 @@
-<?php
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link type="text/css" rel="StyleSheet" href="css/styles.css" />
+</head>
+<body>
 
-function seu_get_wp_config_path()
-{
-    $base = dirname(__FILE__);
-   
-	if (@file_exists($base."/wp-config.php"))
-    {
-        return $base;
-    } 
-	
-	while($base != '/') {
-		$base = dirname($base);
-		if (@file_exists($base."/wp-config.php"))
-		  {
-			  return $base;
-		  }
-	}
-	
-	return false;
-}
-$path = seu_get_wp_config_path();
+<?php
+$wp_path = urldecode($_POST['wp_path']);
 
 //load WP features
-include_once($path .'/wp-config.php');
-include_once($path .'/wp-load.php');
-include_once($path .'/wp-includes/wp-db.php');
+include_once($wp_path .'/wp-config.php');
+include_once($wp_path .'/wp-load.php');
+include_once($wp_path .'/wp-includes/wp-db.php');
+$student = get_userdata($_POST['studentid']);
 
-$user = wp_get_current_user();
-global $blog_id;
+global $wpdb;
+$eval_table_name = "wp_seufolios_evaluations"; 
+$results = $wpdb->get_results( $wpdb->prepare("SELECT * FROM $eval_table_name WHERE profid = " .$_POST['profid'] ." AND studentid = " .$_POST['studentid'] ) );
 
-/*
-//Get all relevant taxonomies
-$taxs = get_taxonomies();
-$taxs = array_diff($taxs, array('link_category', 'nav_menu'));
-print_r($taxs);
-
-//Loop through all posts/pages/etc
-$args = array( 'author' => $_POST['studentid'], 'post_type' => 'any' );
-$loop = new WP_Query( $args );
-while ( $loop->have_posts() ) : $loop->the_post();
-	$post_taxs = wp_get_post_terms( get_the_ID(), $taxs );
-	$this_tax = array();
-	foreach($post_taxs as $tax) {
-		$this_tax[] = array('post_id'=>get_the_ID(), 'taxonomy'=>$tax->taxonomy, 'name'=>$tax->name); 	
-	}
-	$all_taxonomies[] = $this_tax;
-endwhile;
-print_r($all_taxonomies);
-*/
-echo 'Saved!';
-
+echo "<div id='sections'>
+<h2>All done!</h2>
+<p>Thanks for finishing the evaluation.</p>
+<p>You submitted the following answers for <strong>$student->user_nicename</strong> on ". $results[0]->submittime."</p>
+<ol>
+";
+foreach (explode('&', $results[0]->answers) as $chunk) {
+    $param = explode("=", $chunk);
+    if ($param) printf("<li><em>%s</em>:&nbsp;&nbsp;&nbsp;%s</li>\n", urldecode($param[0]), urldecode($param[1]));
+}
+echo "</ol></div>";
 ?>
+</body>
+</html>

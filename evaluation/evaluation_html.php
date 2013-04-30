@@ -228,6 +228,7 @@ function setupSliders() {
 
 function setupEventListeners() {
 	jQuery(':input').change(function() { updateDisplay(this); startTimer(this); });
+	$('textarea').bind('keyup',function(e) { startTimer(this); })
 }
 
 function updateDisplay(input) {
