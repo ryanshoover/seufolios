@@ -101,26 +101,26 @@ html, body {
 
 /*entry setup*/
 
-textarea {
+.major_section textarea {
 	max-width:95%;
 }
 
-.container {
+.major_section .container {
 	width:300px;
 }
 
-.low {
+.major_section .low {
 	width:auto;
 	float:left;
 	font-size:0.8em;
 	height:1.2em;
 	margin-top:5px;
 }
-.low.indent {
+.major_section .low.indent {
 	margin-left: 50px;
 }
 
-.high {
+.major_section .high {
 	width:auto;
 	float:right;
 	font-size:0.8em;
@@ -128,7 +128,7 @@ textarea {
 		margin-top:5px;
 }
 
-.input_value {
+.major_section .input_value {
 	margin:0.2em auto;
 	text-align:center;
 	font-size:0.9em;
@@ -145,12 +145,12 @@ textarea {
 }
 
 
-.slider { 
+.major_section .slider { 
 	clear:both; 
 	margin:0.5em 0 1.5em 0;
 }
 
-.html5div {
+.major_section .html5div {
 	position:			relative;
 	/*background-color:	rgb(230,230,230);*/
 	background-color: #FFF;
@@ -181,7 +181,7 @@ textarea {
 	height:1.1em;	
 }
 
-.icon {
+#buttons .icon {
 	float:right;
 	height:20px;
 	width:20px;
