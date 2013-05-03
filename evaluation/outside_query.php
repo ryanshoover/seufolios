@@ -7,7 +7,6 @@ $_POST = array(
 	'enddate' 	=> '2013-05-10 11:11:11',
 );
 */
-
 $key = 'abcdefg1234567';
 if (!ereg($key, $_POST['key'])){
   echo "Invalid referer "; 
@@ -66,12 +65,11 @@ endwhile;
 global $wpdb;
 $eval_table_name = "wp_seufolios_evaluations"; 
 $depts = get_all_depts();
-	
 
 $query_dept = $_POST['dept'];
-foreach($depts as $dept) {
+foreach($depts as $dept) 
 	if ($query_dept == $dept->abbr) {$test['dept_abbr'] = $dept->abbr; $test['dept_id'] = $dept->id; $query_dept_id = $dept->id;}
-}
+
 
 //setup dates for sql format
 $startdate = $_POST['startdate'];
@@ -85,6 +83,7 @@ $evals_o = $wpdb->get_results(
 
 	WHERE submittime > '$startdate' 
 		AND submittime < '$enddate'
+		AND answers != ''
 		
 	ORDER BY id
 	"
