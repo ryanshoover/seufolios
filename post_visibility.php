@@ -190,7 +190,8 @@ function filter_posts($sql)
 
 function filter_title($text, $post_to_check=null)
 {
-	$post_id = $post_to_check->ID;
+	if (!is_null($post_to_check)) 
+		$post_id = $post_to_check->ID;
 
 	global $post;
 
@@ -296,7 +297,7 @@ function hide_comment_number($count)
 {
 	global $current_user;
 	$user_role = get_the_user_role($current_user->user_login);
-	$comment_can_read = get_option(user_comment_visible, 'deny');
+	$comment_can_read = get_option('user_comment_visible', 'deny');
 	
 	if (strpos($_SERVER['REQUEST_URI'], '/wp-admin/') == true)
 		return $count;

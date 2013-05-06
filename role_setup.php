@@ -33,7 +33,7 @@ function delete_roles() {
 
 function include_professors() {
 	
-	$admin_id = get_user_id_from_string( get_blog_option($current_blog->blog_id, 'admin_email'));
+	$admin_id = get_user_id_from_string( get_blog_option(get_current_blog_id(), 'admin_email'));
 	$blog_major = get_user_major(); //get_the_user_major($admin_id);
 	//var_dump($blog_major);
 	if ( ($GLOBALS[blog_id]) != 1 ) { //makes sure it's not the root blog
@@ -51,7 +51,7 @@ function include_professors() {
 				if ($current_role != 'Administrator')
 				  $result = add_existing_user_to_blog( array( 'user_id' => $professor->ID, 'role' => 'professor' ) );
 			} else {
-				$result = remove_user_from_blog($professor->ID, $current_blog->blog_id);
+				$result = remove_user_from_blog($professor->ID, get_current_blog_id());
 			}
 		}
 	} //end if
