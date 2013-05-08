@@ -1,38 +1,10 @@
 <?php
-<<<<<<< HEAD
 
-function seu_get_wp_config_path()
-{
-    $base = dirname(__FILE__);
-   
-	if (@file_exists($base."/wp-config.php"))
-    {
-        return $base;
-    } 
-	
-	while($base != '/') {
-		$base = dirname($base);
-		if (@file_exists($base."/wp-config.php"))
-		  {
-			  return $base;
-		  }
-	}
-	
-	return false;
-}
-$config_path = seu_get_wp_config_path();
-
-//load WP features
-include_once($config_path .'/wp-config.php');
-include_once($config_path .'/wp-load.php');
-include_once($config_path .'/wp-includes/wp-db.php');
-=======
 $wp_path = urldecode($_GET['wp_path']);
 //load WP features
 include_once($wp_path .'/wp-config.php');
 include_once($wp_path .'/wp-load.php');
 include_once($wp_path .'/wp-includes/wp-db.php');
->>>>>>> 25783114dcb06e099e156728e628dcd854c8a37a
 
 $profid = $_GET['profid'];
 $studentid = $_GET['studentid'];
