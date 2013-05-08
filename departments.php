@@ -14,12 +14,24 @@ $core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.
 register_activation_hook( $core_plugin_url, 'create_dept_sqltable' );
 
 //Add network admin screen for departments
+add_action('network_admin_menu', 'control_dept_info');
+
 //Setup department courses settings pages
 add_action('wp_ajax_add_dept_submit', 'add_dept_save_ajax' );
 add_action('wp_ajax_add_course_select_dept', 'add_course_deptselect');
 add_action('wp_ajax_add_course_submit', 'add_course_save_ajax');
 add_action('wp_ajax_add_course_delete', 'add_course_delete_ajax');
 add_action('wp_ajax_set_default_dept', 'set_default_dept_ajax' );
+
+//Setup department evaluation settings pages ajax
+add_action('wp_ajax_eval_select_dept', 'eval_select_dept');
+add_action('wp_ajax_eval_add_section', 'eval_add_section');
+add_action('wp_ajax_eval_edit_section', 'eval_edit_section');
+add_action('wp_ajax_eval_delete_section', 'eval_delete_section');
+add_action('wp_ajax_eval_show_questions', 'eval_show_questions');
+add_action('wp_ajax_eval_add_question', 'eval_add_question');
+add_action('wp_ajax_eval_edit_question', 'eval_edit_question');
+add_action('wp_ajax_eval_delete_question', 'eval_delete_question');
 
 //turn on single user features
 function enable_departments() {
@@ -38,17 +50,6 @@ function enable_departments() {
 	//adds help bubble for taxonomy meta-block
 	add_action( "admin_head-post-new.php", 'meta_box_instruction' ); //new post
 	add_action( "admin_head-post.php", 'meta_box_instruction' );    //edit post
-	
-	//Setup department evaluation settings pages ajax
-	add_action('wp_ajax_eval_select_dept', 'eval_select_dept');
-	add_action('wp_ajax_eval_add_section', 'eval_add_section');
-	add_action('wp_ajax_eval_edit_section', 'eval_edit_section');
-	add_action('wp_ajax_eval_delete_section', 'eval_delete_section');
-	add_action('wp_ajax_eval_show_questions', 'eval_show_questions');
-	add_action('wp_ajax_eval_add_question', 'eval_add_question');
-	add_action('wp_ajax_eval_edit_question', 'eval_edit_question');
-	add_action('wp_ajax_eval_delete_question', 'eval_delete_question');
-
 }
 
 //***Functions
@@ -431,7 +432,7 @@ function meta_box_instruction($d) {
 function control_dept_info() {
 	add_menu_page('SEUFolios Departments', 'Departments', 'manage_options', 'seufolios_departments', 'control_dept_options','' , 21);
 	add_submenu_page( 'seufolios_departments', 'Department Courses', 'Courses', 'manage_options', 'seufolios_departments_subcourses', 'control_course_list' );
-	add_submenu_page( 'seufolios_departments', 'Department Evaluations', 'Evaluations', 'manage_options', 'seufolios_departments_evaluations', 'control_evaluation_questions');
+	add_submenu_page( 'seufolios_departments', 'Department Evaluation Questions', 'Eval Qs', 'manage_options', 'seufolios_departments_evaluations', 'control_evaluation_questions');
 }
 
 function control_dept_options() {
@@ -744,8 +745,7 @@ function get_courses($dept_id) {
 function get_sections($dept_id) {
 	global $wpdb;
 	$sections_table_name = "wp_seufolios_eval_sections"; 
-	$sql = "SELECT * FROM $sections_table_name WHERE dept_id = $dept_id ORDER BY order_loc ASC";
-	
+	$sql = "SELECT * FROM $sections_table_name WHERE dept_id = " .$dept_id ." ORDER BY order_loc ASC";
 	$results = $wpdb->get_results($sql);
 	
 	return $results;
@@ -921,7 +921,6 @@ function control_evaluation_questions() {
 	</style>
 	<div class="wrap">
         <h2>Evaluation Questions</h2>
-        <!--Commented out - duplicate of option in control_course_list, not needed in single page setup
         <div id="choose_dept">
         	
             <form name="choose_dept-eval" id="choose_dept-eval">
@@ -935,7 +934,7 @@ function control_evaluation_questions() {
 					?>
                 </select>
             </form>
-        </div>-->
+        </div>
         
         <!--Sections-->
         <div id="sections" class="main_group">
@@ -986,7 +985,7 @@ function control_evaluation_questions() {
                     </tr><tr>
                     <td class="align_right"><label for="ques_order">Order Placement</label></td><td><input type="text" name="ques_order" size="2"></td>
 					</tr><tr>
-                    <td class="align_right"></td><td><input type="submit" value="Add Section" /></td>
+                    <td class="align_right"></td><td><input type="submit" value="Add Question" /></td>
                     </tr></table>
                 </form>
             </div>
@@ -995,9 +994,9 @@ function control_evaluation_questions() {
     
     <script>
 		//Department Select
-		jQuery('#dept_select').change(function() 
+		jQuery('#dept_select-eval').change(function() 
 		{
-		   var b = jQuery(this).attr('value');
+		   var b = jQuery(this).val();
 		   jQuery.post( ajaxurl, 
 		  		  {
 		  			'action':'eval_select_dept', 
@@ -1014,7 +1013,7 @@ function control_evaluation_questions() {
 		//Add new section
 		jQuery('#add_new_sec').submit(function() {
 		  
-		  var b = jQuery(this).serialize() + '&dept_id=' + jQuery('#dept_select').attr('value');
+		  var b = jQuery(this).serialize() + '&dept_id=' + jQuery('#dept_select-eval').val();
 		  jQuery.post( ajaxurl, 
 		  		  {
 		  			'action':'eval_add_section', 
@@ -1052,7 +1051,7 @@ function control_evaluation_questions() {
 		//Submit the Edit Section
 		function edit_sec_submit() {
 		  
-		  var b = 'sec_id=' +document.getElementById('sec_id').value + '&sec_title=' +document.getElementById('sec_title').value + '&sec_description=' +document.getElementById('sec_description').value + '&sec_order=' +document.getElementById('sec_order').value + '&dept_id=' + jQuery('#dept_select').attr('value');
+		  var b = 'sec_id=' +document.getElementById('sec_id').value + '&sec_title=' +document.getElementById('sec_title').value + '&sec_description=' +document.getElementById('sec_description').value + '&sec_order=' +document.getElementById('sec_order').value + '&dept_id=' + jQuery('#dept_select-eval').val();
 		  jQuery.post( ajaxurl, 
 		  		  {
 		  			'action':'eval_edit_section', 
@@ -1069,7 +1068,7 @@ function control_evaluation_questions() {
 			jQuery.post( ajaxurl, 
 		  		  {
 		  			'action':'eval_delete_section', 
-					'data': sec_id +'&' + jQuery('#dept_select').attr('value')
+					'data': sec_id +'&' + jQuery('#dept_select-eval').val()
 				  },
 				  function (response) {
 					  jQuery('#sections_list').html(response);
@@ -1169,7 +1168,7 @@ function control_evaluation_questions() {
 		
 		//Delete a question
 		function delete_question(question_id) {
-			jQuerypost( ajaxurl, 
+			jQuery.post( ajaxurl, 
 		  		  {
 		  			'action':'eval_delete_question', 
 					'data': question_id +'&' + jQuery('#sec_id').attr('value')
@@ -1201,7 +1200,6 @@ function create_sec_table($dept_id) {
 					    <button id='edit_$section->id' class='edit_button' type='button' onclick='edit_section($section->id, $section->order_loc);'>Edit</button>&nbsp;
 						<button id='show_questions_$section->id' class='show_questions_button' type='button' onclick='show_questions($section->id, this)'>&raquo;</button></td></tr>\n";	
 	}
-	
 	$result .= "</table>";
 	
 	return $result;
@@ -1330,7 +1328,7 @@ function eval_add_question() {
 	$ques_slug = str_replace(' ','_', urldecode($data['ques_slug']));
 	$ques_question = urldecode($data['ques_question']);
 	$ques_order = $data['ques_order'];
-	$ques_type = '0'; //temp disabled $data['ques_type'];
+	$ques_type = $data['ques_type'];
 	$ques_enabled = ($data['ques_enabled'] == 'checked' ? 1 : 0);
 	$sec_id = $data['sec_id'];
 	

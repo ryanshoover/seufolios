@@ -3,18 +3,13 @@
 Plugin Name: SEU Folios
 Description: Adds customization for eportfolio functions
 Author: Ryan Hoover
-Version: 2.3.2
+Version: 2.3.3
 Author URI: http://ryanhoover.net
 
 Copyright 2013
 
 What's new
-- network admin moved to network settings submenu
-- reworked network admin screens
-- user roles changed to match edublogs roles
-- site option only controls end-user features
-- modification of WP roles is disabled
-- Default WP roles are hidden in the page visibility settings
+- network admin moved back to multiple pages
 */
 
 
@@ -43,8 +38,8 @@ require_once($plugin_url .'help.php');
 //post visibility
 require_once($plugin_url .'post_visibility.php');
 
-//Add network admin screen for departments
-add_action('network_admin_menu', 'setup_network_admin_page');
+//Add network admin screen for departments *under settings*
+//add_action('network_admin_menu', 'setup_network_admin_page');
 
 //enable features for end user, based on site option
 if(get_option('enable_seufolios_features') != 0) {

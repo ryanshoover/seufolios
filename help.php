@@ -12,7 +12,7 @@ add_action('wp_ajax_help_edit_field', 'help_edit_field');
 add_action('wp_ajax_help_delete_field', 'help_delete_field');
 
 //Add network admin screen for departments
-//add_action('network_admin_menu', 'setup_admin_page');
+add_action('network_admin_menu', 'setup_admin_page');
 
 //Setup help sql table
 $core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
