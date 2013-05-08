@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 
 function seu_get_wp_config_path()
 {
@@ -25,42 +26,72 @@ $config_path = seu_get_wp_config_path();
 include_once($config_path .'/wp-config.php');
 include_once($config_path .'/wp-load.php');
 include_once($config_path .'/wp-includes/wp-db.php');
+=======
+$wp_path = urldecode($_GET['wp_path']);
+//load WP features
+include_once($wp_path .'/wp-config.php');
+include_once($wp_path .'/wp-load.php');
+include_once($wp_path .'/wp-includes/wp-db.php');
+>>>>>>> 25783114dcb06e099e156728e628dcd854c8a37a
 
-$stringData = '';
 $profid = $_GET['profid'];
 $studentid = $_GET['studentid'];
-$siteurl = $_GET['siteurl'];
-
-//create answers array
-foreach($_GET as $key => $value) {
-	//move $_GET values to array
-	$key = str_replace('_input', '', $key);
-	
-	if ($key != 'profid' && $key != 'studentid' && $key != 'siteurl' && $key != 'terms') {
-		$stringData .= "$key=$value&";
-	}
-}
-$stringData = substr($stringData,0,-1);
-
-//create terms array
-$terms_temp = explode("~", $_GET['terms']);
-$terms = '';
-foreach($terms_temp as $t) {
-	list($key, $val) = explode(':', $t);
-	$terms .= "$key=$val&";
-}
-$terms = substr($terms,0,-1);
-if(strlen($terms) == 1) $terms = ''; //if no terms load, make the string empty
-
 global $wpdb;
 $eval_table_name = "wp_seufolios_evaluations"; 
 
-//$results = $wpdb->update( $eval_table_name, array('answers'=>$stringData, 'submittime' =>time()), array('profid'=>$profid, 'studentid'=>$studentid) );
-//if(!$results) $results2 = $wpdb->insert( $eval_table_name, array('profid'=>$profid, 'studentid'=>$studentid, 'answers'=>$stringData, 'submittime' =>time()) ); 
-$results = $wpdb->update( $eval_table_name, array('answers'=>$stringData), array('profid'=>$profid, 'studentid'=>$studentid) );
-if(!$results) $results2 = $wpdb->insert( $eval_table_name, array('profid'=>$profid, 'studentid'=>$studentid, 'answers'=>$stringData, 'siteurl'=>$siteurl, 'taxonomies'=>$terms) ); 
+if( isset($_GET['deleteIcon']) ) {
+	$results = $wpdb->query( $wpdb->prepare("DELETE FROM $eval_table_name WHERE profid = $profid AND studentid = $studentid" ) );
+	if($results) echo 'Deleted';
+	else echo "Oops. Something went wrong.<br>$results";
+	die();
+}
+if( isset($_GET['starIcon']) ) {
+	$table_name = "wp_seufolios_starred";
+	$blogurl = urldecode($_GET['blogurl']);
+	$deptid = $_GET['deptid'];
+	
+	//create record if it doesn't exist
+	$exists = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $table_name WHERE blogurl='$blogurl' AND deptid=$deptid"));
+	if(!$exists) $exists = $wpdb->insert( $table_name, array('blogurl'=>$blogurl, 'deptid'=>$deptid ) ); 
+	
+	if($_GET['starIcon']) {
+	//add profid to list
+		$profidsS = $wpdb->get_results("SELECT profids FROM $table_name WHERE blogurl='$blogurl' AND deptid=$deptid");
+		if($profidsS) $profids = unserialize($profidsS[0]->profids);
+		
+		if( !$profidsS || !in_array($profid, $profids) ) {
+			$profids[] = $profid;
+			$profidsS = serialize($profids);
+			$results = $wpdb->query( $wpdb->prepare("UPDATE $table_name SET profids='$profidsS' WHERE blogurl='$blogurl' AND deptid=$deptid" ) );
+		}
+		
+		if($results) echo 'Starred';
+		else echo "Oops. Something went wrong. \n$results";
+		die();
+	} else {
+	//remove profid from list
+		$profidsS = $wpdb->get_results("SELECT profids FROM $table_name WHERE blogurl='$blogurl' AND deptid=$deptid");
+		if($profidsS) $profids = unserialize($profidsS[0]->profids);
+		
+		if( $profidsS && ($key = array_search($profid, $profids)) !== false) {
+			unset($profids[$key]);
+			$profidsS = serialize($profids);
+			$results = $wpdb->query( $wpdb->prepare("UPDATE $table_name SET profids='$profidsS' WHERE blogurl='$blogurl' AND deptid=$deptid" ) );
+		}
+		
+		if($results) echo 'Unstarred';
+		else echo "Oops. Something went wrong. \n$results";
+		die();
+	}
+}
 
-if($results || $results2) echo 'Saved';
-else echo "Oops. Something went wrong. \n$results\n$results2";
+$stringData = $_GET;
+unset($stringData['profid'], $stringData['studentid'], $stringData['wp_path']);
+$string = http_build_query($stringData);
 
+$results = $wpdb->update( $eval_table_name, array('answers'=>$string), array('profid'=>$profid, 'studentid'=>$studentid) );
+
+if($results) echo 'Saved';
+else echo "Oops. Something went wrong. \n$results";
+die();
 ?>

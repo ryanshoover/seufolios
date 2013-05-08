@@ -7,16 +7,13 @@
 <body onLoad="showSection(0);">
 <meta name="viewport" content="initial-scale=1.0">
 <?php 
-
 function seu_get_wp_config_path()
 {
     $base = dirname(__FILE__);
-   
 	if (@file_exists($base."/wp-config.php"))
     {
         return $base;
     } 
-	
 	while($base != '/') {
 		$base = dirname($base);
 		if (@file_exists($base."/wp-config.php"))
@@ -24,7 +21,6 @@ function seu_get_wp_config_path()
 			  return $base;
 		  }
 	}
-	
 	return false;
 }
 $wp_path = seu_get_wp_config_path();
@@ -97,21 +93,30 @@ if ($major_abbr == 'RATS') {
 	}
 }
 
-//Load all taxonomies
-$args=array(
-  'public'   => true,
-  '_builtin' => false
-  
-); 
+//Load all custom taxonomies
+$args=array( 'public' => true, '_builtin' => false ); 
 $output = 'names'; // or objects
 $operator = 'and'; // 'and' or 'or'
 $taxonomies=get_taxonomies($args,$output,$operator);
 $terms_array=get_terms($taxonomies);
-$terms = '';
 foreach($terms_array as $term) {
-	$terms .= $term->name .":" .$term->count ."~";
+	$terms[$term->taxonomy][$term->name] = $term->count;
 }
-$terms = substr($terms, 0, -1);
+
+//create initial value in evaluations table
+$blog = get_bloginfo('wpurl');
+$eval_table_name = 'wp_seufolios_evaluations';
+$results = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $eval_table_name WHERE profid=".$saved_values['profid'] ." AND studentid=".$saved_values['studentid']));
+if(!$results) $results = $wpdb->insert( $eval_table_name, array('profid'=>$saved_values['profid'], 'studentid'=>$saved_values['studentid'], 'siteurl'=>$blog, 'taxonomies'=> serialize($terms) ) ); 
+
+//set up favorites star
+$star_table_name = "wp_seufolios_starred";
+$profidsS = $wpdb->get_var( $wpdb->prepare("SELECT profids FROM $star_table_name WHERE blogurl='".$blog."' AND deptid=" .$dept_id ) );
+if($profidsS) {
+	$profids = unserialize($profidsS);
+	if( ($key = array_search($saved_values['profid'], $profids)) !== false) $favorite = true;
+	else $favorite = false;
+} else $favorite = false;
 
 //create javascript array for saved values
 $script = "\n<script type='text/javascript'>\n
@@ -137,8 +142,7 @@ echo $script;
     <form name="evaluation" id="evaluation" action="finalSave.php" method="post">
     <input type="hidden" id='profid' name='profid' value='<?php echo $saved_values['profid']; ?>'>
     <input type="hidden" id='studentid' name='studentid' value='<?php echo $saved_values['studentid']; ?>'>
-    <input type="hidden" id='siteurl' name='siteurl' value='<?php echo $saved_values['siteurl']; ?>'>
-    <input type="hidden" id='terms' name='terms' value='<?php echo $terms;  ?>'>
+    <input type="hidden" id='wp_path' name='wp_path' value='<?php echo urlencode($wp_path);  ?>'>
     
     <ul id="navigation">
     	<?php
@@ -180,6 +184,8 @@ echo $script;
 
     <div id="buttons">
         <button value='submit'>Submit final evaluation</button>
+        <img src="trash.png" id="delete-entry" class="icon">
+        <div id="star-entry" class="icon<?php if($favorite) echo ' starred'; ?>" title="Mark as favorite"></div>
         <div id='savestatus'>&nbsp;</div>
     </div>
     </form>
@@ -201,28 +207,38 @@ function setupSliders() {
 	for(i=0; i<divs.length; i++) {
 		if (html5) {
 			inputs[i].setAttribute("type", "range");
-			inputs[i].setAttribute('min', '1');
+			//if n/a option, set the min to 0
+			jQuery(inputs[i]).hasClass('na-option') ? inputs[i].setAttribute('min', '0') :inputs[i].setAttribute('min', '1');
 			inputs[i].setAttribute('max', '6');
 			inputs[i].setAttribute('step', '1');
 			inputs[i].className += ' html5slider';
 			divs[i].className += ' html5div';
 		}
 		else {
+			in_val = inputs[i].value;
 			sliders.push( new Slider(divs[i], inputs[i]) );
-			if( inputs[i].value ) sliders[i].setValue(inputs[i].value); //set slider to saved input value
+			if( jQuery(inputs[i]).hasClass('na-option') ) sliders[i].setMinimum(0);
+			sliders[i].setValue(in_val); //set slider to saved input value
 		}
 	}
+	
+	//convert 0 to n/a
+	jQuery("div.na-option").each(function(i) { if(jQuery(this).html()=='0') jQuery(this).html('n/a'); });
 }
 
 function setupEventListeners() {
-	jQuery(':input').change(function() { updateDisplay(this); });
-	jQuery(':input').change(function() { startTimer(this);    });
+	jQuery(':input').change(function() { updateDisplay(this); startTimer(this); });
 }
 
 function updateDisplay(input) {
 	var inputID = input.id.toString();
 	var displayID = inputID.substr(0, inputID.length-5) + 'displayvalue';
-	jQuery('#'+displayID).html(input.value);
+	
+	if(jQuery('#'+displayID).hasClass('na-option') && input.value==0) {
+		jQuery('#'+displayID).html('n/a');
+	} else {
+		jQuery('#'+displayID).html(input.value);
+	}
 }
 
 function startTimer(input) {
@@ -245,11 +261,45 @@ function sendAjax(input) {
 
 }
 
+function setupTrashcan() {
+	jQuery("#delete-entry").click(function() {
+		document.getElementById('savestatus').innerHTML = "deleting...";
+		dataString = jQuery('#evaluation').serialize() + "&deleteIcon=1";
+		jQuery.ajax({  
+		  type: "GET",  
+		  url: "tempSave.php",  
+		  data: dataString 
+		}).done(function( msg ) { document.getElementById('savestatus').innerHTML = msg; parent.location.reload(); });
+		return false;
+	});
+}
+function setupStar() {
+	jQuery("#star-entry").hover(function() {$(this).css('background-position-y', '-20px');}, function(){$(this).css('background-position-y', '0'); });
+	jQuery("#star-entry").click(function() { 
+		document.getElementById('savestatus').innerHTML = "starring...";
+		dataString = "starIcon=" + starIcon + "&blogurl=<?php echo urlencode($blog); ?>&deptid=<?php echo $dept_id; ?>&" +jQuery('#evaluation').serialize();
+		jQuery.ajax({  
+		  type: "GET",  
+		  url: "tempSave.php",  
+		  data: dataString 
+		}).done(function( msg ) { 
+			document.getElementById('savestatus').innerHTML = msg; 
+			jQuery("#star-entry").toggleClass('starred'); 
+			if(starIcon == 0) {starIcon = 1; }
+			else {starIcon = 0; }
+		  });
+		return false;
+	 });
+}
+
 var ajaxTimer;
 var inputs = new Array();
 var dataString = '';
+var starIcon = <?php if($favorite) echo 0; else echo 1; ?>;
 setupSliders();
 setupEventListeners();
+setupTrashcan();
+setupStar();
 </script>
 
 

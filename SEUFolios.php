@@ -10,6 +10,7 @@ Copyright 2013
 
 What's new
 - network admin moved back to multiple pages
+- streamlined evaluation system
 */
 
 

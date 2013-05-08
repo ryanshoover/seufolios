@@ -4,7 +4,7 @@ $_POST = array(
 	'key' => 'abcdefg1234567',
 	'dept' => 'ENGW',
 	'startdate' => '2012-10-10 11:11:11',
-	'enddate' 	=> '2013-03-10 11:11:11',
+	'enddate' 	=> '2013-05-10 11:11:11',
 );
 */
 
@@ -47,6 +47,7 @@ include_once($config_path .'/wp-includes/wp-db.php');
 //Get all Taxonomies
 //!!!!!THIS IS BROKEN!!!!!
 //Loop through all posts/pages/etc
+/*
 $args = array( 'author' => $_POST['studentid'], 'post_type' => 'any' );
 $loop = new WP_Query( $args );
 while ( $loop->have_posts() ) : $loop->the_post();
@@ -57,7 +58,8 @@ while ( $loop->have_posts() ) : $loop->the_post();
 	}
 	$all_taxonomies[] = $this_tax;
 endwhile;
-
+//print_r($all_taxonomies);
+*/
 
 //***********
 //GET Evaluations
@@ -91,13 +93,14 @@ $evals_o = $wpdb->get_results(
 //filter for dept, add to array
 foreach ( $evals_o as $eval_o ) 
 {
+	$eval_o->taxonomies = unserialize($eval_o->taxonomies);
 	$major = get_major($eval_o->studentid);
 	$test['major'] = $major;
 	foreach($depts as $dept) {
 		if ($major == $dept->id) { $major_abbr = $dept->abbr; }
 	}
 	
-	if($major_abbr == $query_dept) { $evals[] = get_object_vars($eval_o); }
+	if($major_abbr == $query_dept) $evals[] = get_object_vars($eval_o); 
 }
 
 //filter for 1 eval per prof per student
@@ -135,6 +138,11 @@ foreach($sections as $section) {
 //***return results
 $result = serialize( array( 'sections' => $sections, 'questions' => $questions, 'taxes' => $all_taxonomies, 'evals' => $evals) );
 echo $result;
+//$printable = unserialize($result);
+//print_r($printable);
+
+
+
 
 
 

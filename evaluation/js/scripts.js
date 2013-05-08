@@ -29,15 +29,15 @@ function insertIframe(url, answers) {
 		//create iframe
 		var iframe = document.createElement("iframe"); 
 		iframe.id = 'eval_iframe';
-		iframe.src = url + "evaluation/evaluation_html.php?siteurl=" + siteurl + "&" + answers;
+		iframe.src = url + "evaluation/evaluation_html.php?" + answers;
 		iframe.setAttribute('scrolling', 'no');
 		var bodytag = document.getElementsByTagName('body')[0];
 		bodytag.insertBefore(iframe,bodytag.firstChild);
 		
 		admin_bar.className += ' highlight';
 		
-		clickable = true;
-		jQuery("#container").click(function() { hideIframe(); }); 
+		//clickable = true;
+		//jQuery("#container").click(function() { hideIframe(); }); 
 	}
 }
 

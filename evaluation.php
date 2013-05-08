@@ -14,14 +14,12 @@ add_action('wp_ajax_add_ques_type_submit', 'add_eval_type_save_ajax' );
 add_action('wp_ajax_eval_edit_question_type', 'add_eval_type_edit_ajax' );
 add_action('wp_ajax_eval_delete_question_type', 'add_eval_type_delete_ajax' );
 
-
 //enable end-user features
 function enable_evaluation() {
 	//Add link in admin bar
 	add_action('wp_enqueue_scripts', 'toolbar_scripts_method');
 	add_action( 'admin_bar_menu', 'toolbar_evaluation', 999 );
 }
-
 
 function toolbar_scripts_method() {
 	$current_user = wp_get_current_user();
@@ -33,11 +31,10 @@ function toolbar_scripts_method() {
 	
 	if($user_role == 'Teacher' || $user_role == 'Super_admin') {
 		echo "<script> var siteurl='" .urlencode($site_details->siteurl) ."'; </script>";
-		$plugin_url = plugins_url() .'/SEUFolios/';
+		$plugin_url = plugins_url() .'/seufolios/';
 		wp_enqueue_script('jquery');
 		wp_enqueue_script('seufolios_iframe_script', plugins_url( 'evaluation/js/scripts.js' , __FILE__ ) );
-		wp_register_style( 'prefix-style', plugins_url('evaluation/css/styles.css', __FILE__) );
-		wp_enqueue_style( 'prefix-style' );
+		wp_enqueue_style( 'prefix-style', plugins_url('evaluation/css/styles.css', __FILE__) );
 	}
 }
 
@@ -59,7 +56,8 @@ function toolbar_evaluation( $wp_admin_bar ) {
 	if(count($results) > 0) $submit .= $results[0]->answers;
 	
 	if($user_role == 'Teacher' || $user_role == 'Super_admin') {
-		$plugin_url = plugins_url() .'/SEUFolios/';
+		$plugin_url = plugins_url() .'/seufolios/';
+
 		  
 		$args = array(
 		  'id' => 'seufolios-evaluation',
@@ -90,6 +88,19 @@ function create_eval_sqltable() {
 	);";
 	
 	dbDelta($sql_eval);
+	
+	$eval_table_name = "wp_seufolios_starred"; 
+   
+	$sql_eval = "CREATE TABLE $eval_table_name (
+	  id mediumint(9) NOT NULL AUTO_INCREMENT,
+	  blogurl mediumtext NOT NULL,
+	  deptid mediumint(9),
+	  profids mediumtext,
+	  submittime timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	  UNIQUE KEY id (id)
+	);";
+	
+	dbDelta($sql_eval);
 }
 
 function get_user_role($user) { 
@@ -115,11 +126,13 @@ function get_user_role($user) {
 
 } 
 
+require_once('evaluation/folios2eval.php');
+
 //*******************************
 //network admin page
 
 function control_eval_ques() {
-	add_menu_page('SEUFolios Evaluation Questions', 'Eval Questions', 'manage_options', 'seufolios_eval_ques', 'control_eval_ques_options','' , 22);
+	add_menu_page('SEUFolios Evaluation Question Types', 'Eval Q Types', 'manage_options', 'seufolios_eval_ques', 'control_eval_ques_options','' , 22);
 }
 
 function control_eval_ques_options() {

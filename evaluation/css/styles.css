@@ -40,15 +40,20 @@ html, body {
 	margin: auto;
 	background-color:#fff;
 }
-
-#navigation, #navigation li {
+#navigation {
+	position:relative;
+	margin:0;
+	padding:0;
+}
+#navigation li {
 	position:relative;
 	margin:0;
 	padding:0;
 	list-style:none;
-	display:inline-block;
+	float:left;
 	cursor:pointer;
 }
+
 #navigation li {
 	padding:5px;
 	margin:0 auto;
@@ -70,6 +75,7 @@ html, body {
 	position:relative;
 	width:97%;
 	height:450px;
+	clear:both;
 	overflow-y:scroll;
 }
 
@@ -85,6 +91,10 @@ html, body {
 }
 
 /*entry setup*/
+
+textarea {
+	max-width:95%;
+}
 
 .container {
 	width:300px;
@@ -146,6 +156,18 @@ html, body {
 	width:80px;
 	height:1.1em;	
 }
+
+.icon {
+	float:right;
+	height:20px;
+	width:20px;
+	overflow:hidden;
+	cursor:pointer;
+	margin-right:1em;
+}
+
+#star-entry { background: url('../star.png') 0 0; }
+#star-entry.starred { background-position: 20px 0; }
 
 @media all and (max-height: 500px) {
 #eval_iframe{height:450px;}
