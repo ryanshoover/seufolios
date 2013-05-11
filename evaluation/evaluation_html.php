@@ -228,6 +228,7 @@ function setupSliders() {
 
 function setupEventListeners() {
 	jQuery(':input').change(function() { updateDisplay(this); startTimer(this); });
+	$('textarea').bind('keyup',function(e) { startTimer(this); })
 }
 
 function updateDisplay(input) {
@@ -255,7 +256,11 @@ function sendAjax(input) {
 	  type: "GET",  
 	  url: "tempSave.php",  
 	  data: dataString 
-	}).done(function( msg ) { document.getElementById('savestatus').innerHTML = msg; });  
+	}).done(function( msg ) { 
+		clearTimeout(submitTimer);
+		jQuery('#savestatus').html(msg); 
+		submitTimer = setTimeout(function() { jQuery('#savestatus').html(''); },3000);
+	});   
 	clearTimeout(ajaxTimer);
 	return false;  
 
@@ -269,7 +274,12 @@ function setupTrashcan() {
 		  type: "GET",  
 		  url: "tempSave.php",  
 		  data: dataString 
-		}).done(function( msg ) { document.getElementById('savestatus').innerHTML = msg; parent.location.reload(); });
+		}).done(function( msg ) { 
+			clearTimeout(submitTimer);
+			jQuery('#savestatus').html(msg); 
+			submitTimer = setTimeout(function() { jQuery('#savestatus').html(''); },3000);
+			parent.location.reload(); 
+		});
 		return false;
 	});
 }
@@ -283,7 +293,9 @@ function setupStar() {
 		  url: "tempSave.php",  
 		  data: dataString 
 		}).done(function( msg ) { 
-			document.getElementById('savestatus').innerHTML = msg; 
+			clearTimeout(submitTimer);
+			jQuery('#savestatus').html(msg); 
+			submitTimer = setTimeout(function() { jQuery('#savestatus').html(''); },3000);
 			jQuery("#star-entry").toggleClass('starred'); 
 			if(starIcon == 0) {starIcon = 1; }
 			else {starIcon = 0; }
@@ -293,6 +305,7 @@ function setupStar() {
 }
 
 var ajaxTimer;
+var submitTimer;
 var inputs = new Array();
 var dataString = '';
 var starIcon = <?php if($favorite) echo 0; else echo 1; ?>;
