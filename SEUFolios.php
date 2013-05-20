@@ -30,6 +30,9 @@ if(get_option('enable_seufolios_features') != 0) {
 	add_action( 'init', 'add_taxonomies' ); 
 	
 	$plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) ));
+	//core functions, database setup
+	require_once($plugin_url .'core.php');
+	
 	//multi-department features
 	require_once($plugin_url .'departments.php');
 	

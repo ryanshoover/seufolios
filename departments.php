@@ -27,10 +27,6 @@ add_action( "admin_head-post.php", 'meta_box_instruction' );    //edit post
 add_action('network_admin_menu', 'control_dept_info');
 add_action('wp_ajax_set_default_dept', 'set_default_dept_ajax' );
 
-//Setup departments sql table
-$core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
-register_activation_hook( $core_plugin_url, 'create_dept_sqltable' );
-
 //Setup department courses settings pages
 add_action('wp_ajax_add_dept_submit', 'add_dept_save_ajax' );
 add_action('wp_ajax_add_course_select_dept', 'add_course_deptselect');
@@ -641,119 +637,6 @@ function control_course_list() {
 	</script>
     
     <?php
-}
-
-function create_dept_sqltable() {
-	global $wpdb;
-	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-	
-    //Department
-	$dept_table_name = $wpdb->prefix . "seufolios_depts"; 
-   
-	$sql_dept = "CREATE TABLE $dept_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  abbr CHAR(4) NOT NULL,
-	  name tinytext NOT NULL,
-	  UNIQUE KEY id (id)
-	);";
-	
-	dbDelta($sql_dept);
-
-	//Courses	
-	$courses_table_name = $wpdb->prefix . "seufolios_courses"; 
-   
-	$sql_courses = "CREATE TABLE $courses_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  dept_id mediumint(9) NOT NULL,
-	  number tinytext NOT NULL,
-	  title tinytext NOT NULL,
-	  UNIQUE KEY id (id),
-	  FOREIGN KEY (dept_id) REFERENCES $dept_table_name(id)
-	);";
-	
-	dbDelta($sql_courses);
-
-	//Evaluation Sections	
-	$eval_sections_table_name = $wpdb->prefix . "seufolios_eval_sections"; 
-   
-	$sql_eval_sections = "CREATE TABLE $eval_sections_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  dept_id mediumint(9) NOT NULL,
-	  title tinytext NOT NULL,
-	  description tinytext,
-	  order_loc tinyint,
-	  UNIQUE KEY id (id),
-	  FOREIGN KEY (dept_id) REFERENCES $dept_table_name(id)
-	);";
-	
-	dbDelta($sql_eval_sections);
-	
-	//Evaluation Questions (subset of sections)
-	$eval_questions_table_name = $wpdb->prefix . "seufolios_eval_questions"; 
-   
-	$sql_eval_questions = "CREATE TABLE $eval_questions_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  section_id mediumint(9) NOT NULL,
-	  slug tinytext NOT NULL,
-	  question text NOT NULL,
-	  type mediumint(9) NOT NULL,
-	  enabled tinyint,
-	  order_loc tinyint,
-	  UNIQUE KEY id (id),
-	  FOREIGN KEY (section_id) REFERENCES $eval_sections_table_name(id)
-	);";
-	
-	dbDelta($sql_eval_questions);
-}
-
-function create_dept_sqltable_data() {
-	//not used - a testing function
-   global $wpdb;
-   $dept_table_name = $wpdb->prefix . "seufolios_depts"; 
-   
-   $rows_affected = $wpdb->insert( $dept_table_name, array( 'abbr' => 'ENGW', 'name' => 'English Writing and Rhetoric' ) );
-}
-
-//***Generic functions
-function get_depts() {
-	global $wpdb;
-	$dept_table_name = 'wp_seufolios_depts';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
-	 
-	$sql = "SELECT * FROM $dept_table_name ORDER BY abbr ASC";
-	
-	$results = $wpdb->get_results($sql);
-	
-	return $results;	
-}
-
-function get_courses($dept_id) {
-	global $wpdb;
-	$courses_table_name = "wp_seufolios_courses"; 
-	$sql = "SELECT * FROM $courses_table_name WHERE dept_id = $dept_id ORDER BY number ASC";
-	
-	$results = $wpdb->get_results($sql);
-	
-	return $results;
-}
-
-function get_sections($dept_id) {
-	global $wpdb;
-	$sections_table_name = "wp_seufolios_eval_sections"; 
-	$sql = "SELECT * FROM $sections_table_name WHERE dept_id = $dept_id ORDER BY order_loc ASC";
-	
-	$results = $wpdb->get_results($sql);
-	
-	return $results;
-}
-
-function get_questions($sec_id) {
-	global $wpdb;
-	$questions_table_name = "wp_seufolios_eval_questions"; 
-	$sql = "SELECT * FROM $questions_table_name WHERE section_id = $sec_id ORDER BY order_loc ASC";
-	
-	$results = $wpdb->get_results($sql);
-	
-	return $results;
 }
 
 //***AJAX functions

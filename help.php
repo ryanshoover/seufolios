@@ -14,10 +14,6 @@ add_action('wp_ajax_help_delete_field', 'help_delete_field');
 //Add network admin screen for departments
 add_action('network_admin_menu', 'setup_admin_page');
 
-//Setup help sql table
-$core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
-register_activation_hook( $core_plugin_url, 'create_help_sqltable' );
-
 //Global vars
 //global $help;
 $help = array();
@@ -65,23 +61,6 @@ function replace_help() {
 	$results = $wpdb->get_results($sql);
 	echo $results[0]->content;
 	die();
-}
-
-function create_help_sqltable() {
-	global $wpdb;
-	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-	
-    //Department
-	$help_table_name = "wp_seufolios_help"; 
-   
-	$sql_help = "CREATE TABLE $help_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  help_key TINYTEXT NOT NULL,
-	  content MEDIUMTEXT NOT NULL,
-	  UNIQUE KEY id (id)
-	);";
-	
-	dbDelta($sql_help);
 }
 
 function get_helps() {
