@@ -43,7 +43,7 @@ function include_professors() {
 			$prof_major = get_the_user_major($professor->ID);
 			//var_dump($prof_major);
 			if($prof_major == $blog_major) {
-				$current_role = get_the_user_role($professor->user_login);
+				$current_role = get_the_user_role($professor);
 				if ($current_role != 'Administrator')
 				  $result = add_existing_user_to_blog( array( 'user_id' => $professor->ID, 'role' => 'professor' ) );
 			} else {

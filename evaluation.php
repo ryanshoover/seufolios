@@ -17,7 +17,7 @@ add_action('wp_ajax_eval_delete_question_type', 'add_eval_type_delete_ajax' );
 
 function toolbar_scripts_method() {
 	$current_user = wp_get_current_user();
-	$user_role = get_user_role($current_user);
+	$user_role = get_the_user_role($current_user);
 	global $blog_id;
 	$site_details = get_blog_details($blog_id, 'siteurl');
 	
@@ -38,7 +38,7 @@ function toolbar_evaluation( $wp_admin_bar ) {
     $eval_table_name = "wp_seufolios_evaluations"; 
 
 	$current_user = wp_get_current_user();
-	$user_role = get_user_role($current_user);
+	$user_role = get_the_user_role($current_user);
 	$admin_id = get_user_id_from_string( get_blog_option($current_blog->blog_id, 'admin_email'));
 	$submit = "profid=$current_user->id" ."&" ."studentid=$admin_id" ."&";
 
@@ -61,26 +61,7 @@ function toolbar_evaluation( $wp_admin_bar ) {
 	}
 }
 
-function get_user_role($user) { 
-        global $wpdb, $wp_roles; 
-		
-		//$user = get_user_by('login', $user_login );
-        if ( !isset($wp_roles) ) 
-            $wp_roles = new WP_Roles(); 
-			
-		if ( current_user_can('manage_network') )
-			return 'Super_admin';
-	 
-	 	//return $wp_roles;
-		foreach($wp_roles->role_names as $role => $Role) {
-		  $caps = $wpdb->prefix . 'capabilities'; 
-		  
-		  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
-			  return $Role; 
-		  } 
-		} 
-
-} 
+ 
 
 //*******************************
 //network admin page

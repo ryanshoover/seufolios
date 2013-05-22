@@ -127,7 +127,7 @@ function setup_seufolios_db() {
 // *** Generic Department functions
 function get_depts() {
 	global $wpdb;
-	$dept_table_name = 'wp_seufolios_depts';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
+	$dept_table_name = $wpdb->prefix . 'seufolios_depts';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
 	 
 	$sql = "SELECT * FROM $dept_table_name ORDER BY abbr ASC";
 	
@@ -136,9 +136,19 @@ function get_depts() {
 	return $results;	
 }
 
+function get_taxes($dept_id) {
+	global $wpdb;
+	$taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	$sql = "SELECT * FROM $taxes_table_name WHERE dept_id = $dept_id ORDER BY taxonomy";
+	
+	$results = $wpdb->get_results($sql);
+	
+	return $results;
+}
+
 function get_courses($dept_id) {
 	global $wpdb;
-	$courses_table_name = "wp_seufolios_courses"; 
+	$courses_table_name = $wpdb->prefix . "seufolios_courses"; 
 	$sql = "SELECT * FROM $courses_table_name WHERE dept_id = $dept_id ORDER BY number ASC";
 	
 	$results = $wpdb->get_results($sql);
@@ -148,7 +158,7 @@ function get_courses($dept_id) {
 
 function get_sections($dept_id) {
 	global $wpdb;
-	$sections_table_name = "wp_seufolios_eval_sections"; 
+	$sections_table_name = $wpdb->prefix . "seufolios_eval_sections"; 
 	$sql = "SELECT * FROM $sections_table_name WHERE dept_id = $dept_id ORDER BY order_loc ASC";
 	
 	$results = $wpdb->get_results($sql);
@@ -158,7 +168,7 @@ function get_sections($dept_id) {
 
 function get_questions($sec_id) {
 	global $wpdb;
-	$questions_table_name = "wp_seufolios_eval_questions"; 
+	$questions_table_name = $wpdb->prefix . "seufolios_eval_questions"; 
 	$sql = "SELECT * FROM $questions_table_name WHERE section_id = $sec_id ORDER BY order_loc ASC";
 	
 	$results = $wpdb->get_results($sql);
@@ -168,31 +178,41 @@ function get_questions($sec_id) {
 
 // *** User roles
 //get user's role in a site
-function get_the_user_role($user_login) { 
-        global $wpdb, $wp_roles; 
-		$user = get_user_by('login', $user_login );
-
-        if ( !isset($wp_roles) ) 
-            $wp_roles = new WP_Roles(); 
-		if ($user && $user->has_cap('manage_categories')) //test if user exists (logged in) then if it has admin caps
-			return 'Administrator'; //Give admins and superadmins Administrator role
-	    		
-		foreach($wp_roles->role_names as $role => $Role) {
-		  $caps = $wpdb->prefix . 'capabilities'; 
-		  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
-			  return $Role; 
-		  } 
-		} 
-		$no_role = 'World';
-		return $no_role;
+function get_the_user_role($user) { 
+	global $wpdb, $wp_roles; 
+	
+	if ( !isset($wp_roles) ) 
+		$wp_roles = new WP_Roles(); 
+		
+	if ($user && current_user_can('manage_network') )
+		return 'Super_admin';
+	
+	if ($user && current_user_can('manage_categories')) //test if user exists (logged in) then if it has admin caps
+		return 'Administrator'; //Give admins and superadmins Administrator role
+			
+	foreach($wp_roles->role_names as $role => $Role) {
+	  $caps = $wpdb->prefix . 'capabilities'; 
+	  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
+		  return $Role; 
+	  } 
+	} 
+	$no_role = 'World';
+	return $no_role;
 } 
 
-//generic function to return user's major
+//generic function to return user's major when it's the user meta field
 function get_the_user_major($user_id) {
-  $key = 'major';
-  $single = false;
-  $major = get_user_meta( $user_id, $key, $single ); 
-  return $major[0];
+	$key = 'major';
+	$single = false;
+	$major = get_user_meta( $user_id, $key, $single ); 
+	return $major[0];
+}
+
+//generic function to return user's major when it's the site option
+function get_user_major() {    //($user_id) {
+	$major = get_option('student_major');
+	if($major === false) $major = get_site_option('seu_default_dept_id');
+	return $major;
 }
 
 ?>

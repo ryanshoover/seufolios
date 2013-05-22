@@ -27,6 +27,12 @@ add_action( "admin_head-post.php", 'meta_box_instruction' );    //edit post
 add_action('network_admin_menu', 'control_dept_info');
 add_action('wp_ajax_set_default_dept', 'set_default_dept_ajax' );
 
+//Setup department taxonomy settings page
+add_action('wp_ajax_tax_select_dept', 'tax_select_dept_ajax');
+add_action('wp_ajax_tax_add_tax', 'tax_add_tax_ajax');
+add_action('wp_ajax_tax_edit_tax', 'tax_edit_tax_ajax');
+add_action('wp_ajax_tax_delete_tax', 'tax_delete_tax_ajax');
+
 //Setup department courses settings pages
 add_action('wp_ajax_add_dept_submit', 'add_dept_save_ajax' );
 add_action('wp_ajax_add_course_select_dept', 'add_course_deptselect');
@@ -44,21 +50,6 @@ add_action('wp_ajax_eval_edit_question', 'eval_edit_question');
 add_action('wp_ajax_eval_delete_question', 'eval_delete_question');
 
 //***Functions
-
-//generic function to return user's major
-function get_user_major() {    //($user_id) {
-  /* old system, moved to site option
-  $key = 'major';
-  $single = false;
-  $major = get_user_meta( $user_id, $key, $single ); 
-  return $major[0];
-  */
-  $major = get_option('student_major');
-  if($major === false) $major = get_site_option('seu_default_dept_id');
-  
-  return $major;
-  
-}
 
 //function to unregister a custom post type
 //not used yet = could be used for RAGS as they have custom post types
@@ -423,6 +414,7 @@ function meta_box_instruction($d) {
 function control_dept_info() {
 	add_menu_page('SEUFolios Departments', 'Departments', 'manage_options', 'seufolios_departments', 'control_dept_options','' , 21);
 	add_submenu_page( 'seufolios_departments', 'Department Courses', 'Courses', 'manage_options', 'seufolios_departments_subcourses', 'control_course_list' );
+	add_submenu_page( 'seufolios_departments', 'Department Taxonomies', 'Taxonomies', 'manage_options', 'seufolios_departments_taxes', 'control_tax_list' );
 	add_submenu_page( 'seufolios_departments', 'Department Evaluations', 'Evaluations', 'manage_options', 'seufolios_departments_evaluations', 'control_evaluation_questions');
 }
 
@@ -536,6 +528,241 @@ function set_default_dept_ajax() {
 	$result = update_site_option('seu_default_dept_id', $data['default_dept']);
 	echo "$result <br>";
 	echo "Default department id set to " .$data['default_dept'];
+	die();
+}
+
+function control_tax_list() {
+//sets up network admin page for custom taxonomies
+	if ( !current_user_can( 'manage_options' ) )  {
+		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	}
+	
+	$q_types = get_question_types();
+	
+	?>
+	<style>
+	div.main_group {
+		float:left;
+		margin:0 2em 0 0;	
+	}
+	table.seufolios { border-spacing:0; }
+	table.seufolios th, table.seufolios td {
+		text-align:left;
+		padding-right:2em;
+	}
+	table.seufolios th {
+		background-color: #FFF;	
+		border-bottom:thin solid gray;
+	}
+	table.seufolios td { 
+		padding:0.5em 1em;
+		
+	}
+	table.seufolios tr {
+		background-color: #EFEFEF;	
+	}
+	table.seufolios tr.selected { 
+		background-color:#FFF !important; 
+		font-weight:bold;
+	}
+	table.seufolios td.question { width:200px; }
+	td.desc {
+		font-size:0.8em;
+		font-weight:400;
+		color:gray;
+	}
+	td.title {padding-left:5px;}
+	
+	div#taxes_form {	display:none; }
+	form * {vertical-align:middle;}
+	form.inline * {padding:0; margin:0; height:20px;}
+	.align_right {text-align:right; margin-right:2em;}
+	</style>
+	<div class="wrap">
+        <h2>Department Evaluations</h2>
+        <div id="choose_dept">
+        	<form name="choose_dept" id="choose_dept">
+                <select name="dept_select" id="dept_select">
+                	<option value="0">--Select a Department--</option>
+                	<?php
+					$depts = get_depts();
+					foreach($depts as $dept) {
+						echo "<option value='$dept->id'> $dept->name</option>\n";	
+					}
+					?>
+                </select>
+            </form>
+        </div>
+        
+        <!--Taxes-->
+        <div id="taxes" class="main_group">
+            <div id="taxes_list">
+                
+            </div>
+            <div id="taxes_form">
+                <h3>Add New Taxonomy Term</h3>
+                <form name="add_new_tax" id="add_new_tax" method="POST">
+                	<table>
+                    <tr>
+                    <td class="align_right"><label for="taxonomy">Taxonomy</label></td><td><input type="text" name="taxonomy" size="10"></td>
+                    </tr><tr>
+                    <td class="align_right"><label for="term_slug">Term Slug</label></td><td><input type="text" name="term_slug" size="5"></td>
+                    </tr><tr>
+                    <td class="align_right"><label for="term_title">Term Title</label></td><td><input type="text" name="term_title" size="20"></td>
+					</tr><tr>
+                    <td class="align_right"></td><td><input type="submit" value="Add Section" /></td>
+                    </tr></table>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+		//Department Select
+		jQuery('#dept_select').change(function() 
+		{
+		   var b = jQuery(this).val();
+		   jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_select_dept', 
+					'data': b
+				  },
+				  function (response) {
+					  jQuery('#taxes_list').html(response);
+				  });
+			document.getElementById('taxes_form').style.display = 'block';
+		});
+		
+		//Add new tax
+		jQuery('#add_new_tax').submit(function() {
+		  
+		  var b = jQuery(this).serialize() + '&dept_id=' + jQuery('#dept_select').val();
+		  jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_add_tax', 
+					'data': b
+				  },
+				  function (response) {
+					  jQuery('#taxes_list').html(response);
+				  });
+				  
+		  jQuery(this).each (function(){
+			this.reset();
+		  });
+		  
+		  return false;
+		});
+		
+		//Edit a tax
+		function edit_tax(id) {
+			var tr = document.getElementById('tax_row_'+id);
+			var tds = jQuery('#tax_row_'+id+' td');
+			var old_tax = tds[0].innerHTML;
+			var old_term_slug = tds[1].innerHTML;
+			var old_term_title = tds[2].innerHTML;
+			var innerHTML = "<td><input type='hidden' name='tax_id' id='tax_id' value='" + id + "'>" +
+							"<input type='text' name='taxonomy' id='taxonomy' size='10' value='" +old_tax+ "'></td>" +
+							"<td><input type='text' name='term_slug' id='term_slug' size='10' value='" +old_term_slug+ "'></td>" +
+							"<td><input type='text' name='term_title' id='term_title' size='10' value='"+old_term_title+"'></td>" +
+							"<td><button type='submit' onclick='edit_tax_submit();'>Done</button> &nbsp; " +
+							"<button id='delete_"+id+"' class='delete_button' type='button' onclick='delete_tax("+id+")'>Delete</button></td>";
+			
+			tr.innerHTML = innerHTML;
+			return false;	
+		}
+		
+		//Submit the Edit Section
+		function edit_tax_submit() {
+		  var b = jQuery("#tax_id, #taxonomy, #term_slug, #term_title").serialize() + '&dept_id=' + jQuery('#dept_select').val();
+		  jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_edit_tax', 
+					'data': b
+				  },
+				  function (response) {
+					  jQuery('#taxes_list').html(response);
+				  });
+		  return false;
+		}
+		
+		//Delete a section
+		function delete_tax(tax_id) {
+			jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_delete_tax', 
+					'data': 'tax_id='+tax_id +'&dept_id=' + jQuery('#dept_select').val(),
+				  },
+				  function (response) {
+					  jQuery('#taxes_list').html(response);
+				  });
+		  
+		  return false;			
+		}
+	</script>
+    
+    <?php
+}
+
+function create_tax_table($dept_id) {
+//used in taxes network admin page
+	//create html and return
+	$result = "<table class='seufolios'>
+		<tr><th>Taxonomy</th><th>Term Slug</th><th>Term Title</th><th></th></tr>";
+	$taxes = get_taxes($dept_id);
+	foreach($taxes as $tax)
+		$result .= "<tr id='tax_row_$tax->id'><td>$tax->taxonomy</td><td>$tax->term_slug</td><td>$tax->term_title</td> <td><button id='edit_$tax->id' class='edit_button' type='button' onclick='edit_tax($tax->id)'>Edit</button></td></tr>\n";	
+	
+	$result .= "</table>";
+	
+	return $result;
+}
+
+function tax_select_dept_ajax() {
+	$dept_id = $_POST['data'];
+	echo create_tax_table($dept_id);
+	die();
+}
+
+function tax_add_tax_ajax() {
+	//used in taxes network page to save a new taxonomy	
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	
+	//insert new dept in to table
+	global $wpdb;
+	$taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	$rows_affected = $wpdb->insert( $taxes_table_name, array( 'dept_id' => $data['dept_id'], 'taxonomy' => $data['taxonomy'], 'term_slug' => $data['term_slug'], 'term_title' => $data ['term_title'] ) );
+	
+	$result = create_tax_table($data['dept_id']);
+	
+	echo $result;
+	die();
+}
+
+function tax_edit_tax_ajax() {
+//edit existing taxonomy
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	
+	global $wpdb;
+	$taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	$rows_affected = $wpdb->update( $taxes_table_name, array( 'taxonomy' => $data['taxonomy'], 'term_slug' => $data['term_slug'], 'term_title' => $data ['term_title'] ), array( 'id' => $data['tax_id'])  );
+	
+	echo create_tax_table($data['dept_id']);
+	die();
+}
+
+function tax_delete_tax_ajax() {
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	
+	//delete course from table
+	global $wpdb;
+	$taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	$sql = "DELETE FROM $taxes_table_name WHERE id=" .$data['tax_id'];
+	$rows_affected = $wpdb->query($sql);
+	
+	echo create_tax_table($data['dept_id']);
 	die();
 }
 

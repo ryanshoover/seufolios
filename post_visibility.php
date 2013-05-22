@@ -108,7 +108,7 @@ function get_private_message() {
 }
 
 function get_user_default_setting($role) {
-	if ( $role == 'Administrator' ) return 'allow'; //ALWAYS allow admins to see everything
+	if ( $role == 'Administrator' || $role == 'Super_admin' ) return 'allow'; //ALWAYS allow admins and super admins to see everything
 	
 	$setting = get_option("user_default_setting_$role", 'allow'); //default setting is allow
 	return $setting;
@@ -148,7 +148,7 @@ function post_should_be_hidden_to_user($postid, $current_user) {
 	if (!isset($postid))
 		return true;
 
-	$role = get_the_user_role($current_user->user_login);
+	$role = get_the_user_role($current_user);
 	
 	$per_post_setting = get_user_post_setting($role, $postid);
 	
@@ -199,9 +199,9 @@ function get_social_access_control_for_user($category_id, $user) {
 	if ($user->has_cap('manage_categories')) 
 		return true;
 
-	$role = get_the_user_role($user->login);
+	$role = get_the_user_role($user);
 	
-	if ($role == 'Administrator')
+	if ($role == 'Administrator' || $role == 'Super_admin')
 		return true;
 	
 	if ($role == 0)
@@ -331,7 +331,7 @@ function filter_pages()
 function hide_comment($text)
 {
 	global $current_user;
-	$user_role = get_the_user_role($current_user->user_login);
+	$user_role = get_the_user_role($current_user);
 
 	$comment_can_read = get_option(user_comment_visible, 'deny');
 	
@@ -353,8 +353,8 @@ function hide_comment($text)
 function hide_comment_number($count)
 {
 	global $current_user;
-	$user_role = get_the_user_role($current_user->user_login);
-	$comment_can_read = get_option(user_comment_visible, 'deny');
+	$user_role = get_the_user_role($current_user);
+	$comment_can_read = get_option('user_comment_visible', 'deny');
 	
 	if (strpos($_SERVER['REQUEST_URI'], '/wp-admin/') == true)
 		return $count;
