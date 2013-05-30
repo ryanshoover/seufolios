@@ -154,7 +154,7 @@ function get_major($user_id) {
 
 function get_all_depts() {
 	global $wpdb;
-	$dept_table_name = 'wp_seufolios_depts';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
+	$dept_table_name = $wpdb->base_prefix . 'seufolios_depts';
 	 
 	$sql = "SELECT * FROM $dept_table_name ORDER BY abbr ASC";
 	

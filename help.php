@@ -23,7 +23,7 @@ function insert_help($help_key) {
 	do_action('enable_help_hook'); //lets us use inline help
 	
 	global $wpdb;
-	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts"; 
+	$help_table_name = $wpdb->base_prefix . 'seufolios_help'; 
 	$sql = "SELECT content FROM $help_table_name WHERE help_key='" .$help_key ."'";
 	$results = $wpdb->get_results($sql);
 	$help_text = $results[0]->content;
@@ -37,7 +37,7 @@ function return_help($help_key) {
 	do_action('enable_help_hook'); //lets us use inline help
 	
 	global $wpdb;
-	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts"; 
+	$help_table_name = $wpdb->base_prefix . 'seufolios_help'; 
 	$sql = "SELECT content FROM $help_table_name WHERE help_key='" .$help_key ."'";
 	$results = $wpdb->get_results($sql);
 	$help_text = $results[0]->content;
@@ -56,7 +56,7 @@ function enable_help() {
 
 function replace_help() {
 	global $wpdb;
-	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts"; 
+	$help_table_name = $wpdb->base_prefix . 'seufolios_help';
 	$sql = "SELECT content FROM $help_table_name WHERE help_key='" .$_POST['data'] ."'";
 	$results = $wpdb->get_results($sql);
 	echo $results[0]->content;
@@ -65,7 +65,7 @@ function replace_help() {
 
 function get_helps() {
 	global $wpdb;
-	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
+	$help_table_name = $wpdb->base_prefix . 'seufolios_help';
 	 
 	$sql = "SELECT * FROM $help_table_name ORDER BY help_key ASC";
 	

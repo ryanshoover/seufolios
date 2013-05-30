@@ -72,7 +72,7 @@ function add_custom_user_profile_fields( $user ) {
 	
 	$major = get_user_major(); //get_user_major($user->id);
 	$depts = get_depts();
-	
+
 ?>
 	<h3><?php _e('Student Information', 'your_textdomain'); ?></h3>
 	<table class="form-table">
@@ -165,6 +165,7 @@ function replace_course_terms($user_id) {
 function setup_custom_tax() {
 	$user_id = get_current_user_id();
 	$major = get_user_major(); //($user_id);
+	
 	$depts = get_depts();
 	foreach($depts as $dept) {
 		if ($major == $dept->id) $major_abbr = $dept->abbr;
@@ -176,13 +177,41 @@ function setup_custom_tax() {
 			setup_rats_student();	
 			break;
 		
-		//ENGW
-		case 'ENGW':
-			register_taxonomy_for_object_type('engw_doctypes', 'post' );
-			register_taxonomy_for_object_type('engw_doctypes', 'page' );
-			break;
 	}
-
+	
+	//get taxes from database, add to all post types
+	$taxes_arr = get_taxes($major);
+	foreach($taxes_arr as $t) {
+		$taxes[$t->taxonomy][$t->term_slug] = $t->term_title;
+	}
+	$post_types = get_post_types();
+	unset($post_types['attachment'], $post_types['revision'], $post_types['nav_menu_item']);
+	
+	foreach($taxes as $tax=>$terms) {
+		$tax = strtolower(str_replace(' ', '_', $tax));
+		register_taxonomy(
+			$tax,
+			$post_types,
+			array(
+				'label' => ucfirst($tax),			//uppercase first letter
+				'rewrite' => array('slug' => $tax ),
+				'show_admin_column' => true,
+				)
+			);
+		foreach($terms as $term=>$description) {
+			$term = strtolower(str_replace(' ', '_', $term));
+			if( !term_exists($term, $tax) ) {
+				wp_insert_term(
+					$term, 	// the term 
+					$tax, 	// the taxonomy
+					array(
+					  'description'=> $description,
+					  'slug' => $term,		
+					)
+				  );
+			}
+		}
+	}
 }
 
 function setup_rats_student() {
@@ -238,12 +267,9 @@ function setup_rats_student() {
 		'hierarchical' => true
 		)
 	);
-
 	
 	//order the admin menus
 	add_action('admin_menu','order_admin_menu');
-	//-> this goes in the function : swap_admin_menu_sections('Pages', 'Posts');
-	
 
 	//sets up the default content for the 2 custom post types
 	add_filter( 'default_content', 'rats_default_content', 10, 2 );	
@@ -579,7 +605,7 @@ function control_tax_list() {
 	.align_right {text-align:right; margin-right:2em;}
 	</style>
 	<div class="wrap">
-        <h2>Department Evaluations</h2>
+        <h2>Department Taxonomies</h2>
         <div id="choose_dept">
         	<form name="choose_dept" id="choose_dept">
                 <select name="dept_select" id="dept_select">
@@ -730,7 +756,7 @@ function tax_add_tax_ajax() {
 	
 	//insert new dept in to table
 	global $wpdb;
-	$taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
 	$rows_affected = $wpdb->insert( $taxes_table_name, array( 'dept_id' => $data['dept_id'], 'taxonomy' => $data['taxonomy'], 'term_slug' => $data['term_slug'], 'term_title' => $data ['term_title'] ) );
 	
 	$result = create_tax_table($data['dept_id']);
@@ -745,7 +771,7 @@ function tax_edit_tax_ajax() {
 	parse_str($_POST['data'], $data);
 	
 	global $wpdb;
-	$taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
 	$rows_affected = $wpdb->update( $taxes_table_name, array( 'taxonomy' => $data['taxonomy'], 'term_slug' => $data['term_slug'], 'term_title' => $data ['term_title'] ), array( 'id' => $data['tax_id'])  );
 	
 	echo create_tax_table($data['dept_id']);
@@ -758,7 +784,7 @@ function tax_delete_tax_ajax() {
 	
 	//delete course from table
 	global $wpdb;
-	$taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
 	$sql = "DELETE FROM $taxes_table_name WHERE id=" .$data['tax_id'];
 	$rows_affected = $wpdb->query($sql);
 	
@@ -884,7 +910,7 @@ function add_dept_save_ajax() {
 		
 		//insert new dept in to table
 		global $wpdb;
-		$dept_table_name = $wpdb->prefix . "seufolios_depts"; 
+		$dept_table_name = $wpdb->base_prefix . "seufolios_depts"; 
 		$rows_affected = $wpdb->insert( $dept_table_name, array( 'abbr' => $new_abbr, 'name' => $new_title ) );
 		
 		//get all depts from table
@@ -931,7 +957,7 @@ function add_course_save_ajax() {
 	
 	//insert new course in to table
 	global $wpdb;
-	$course_table_name = $wpdb->prefix . "seufolios_courses"; 
+	$course_table_name = $wpdb->base_prefix . "seufolios_courses"; 
 	$rows_affected = $wpdb->insert( $course_table_name, array( 'dept_id' => $dept_id, 'number' => $new_num, 'title' => $new_title ) );
 	
 	//create html and return
@@ -948,7 +974,7 @@ function add_course_delete_ajax() {
 	
 	//delete course from table
 	global $wpdb;
-	$course_table_name = $wpdb->prefix . "seufolios_courses"; 
+	$course_table_name = $wpdb->base_prefix . "seufolios_courses"; 
 	$sql = "DELETE FROM $course_table_name WHERE id=$course_id";
 	$rows_affected = $wpdb->query($sql);
 	
@@ -1358,7 +1384,7 @@ function eval_add_section() {
 	
 	//insert new course in to table
 	global $wpdb;
-	$eval_sections_table_name = $wpdb->prefix . "seufolios_eval_sections"; 
+	$eval_sections_table_name = $wpdb->base_prefix . "seufolios_eval_sections"; 
 	$rows_affected = $wpdb->insert( $eval_sections_table_name, array( 'dept_id' => $dept_id, 'title' => $sec_title, 'description' => $sec_description, 'order_loc' => $sec_order ) );
 	
 	//create html and return
@@ -1385,7 +1411,7 @@ function eval_edit_section() {
 	
 	//edit section in wpdb
 	global $wpdb;
-	$eval_sections_table_name = $wpdb->prefix . "seufolios_eval_sections"; 
+	$eval_sections_table_name = $wpdb->base_prefix . "seufolios_eval_sections"; 
 	$rows_affected = $wpdb->update( $eval_sections_table_name, array( 'title' => $sec_title, 'description' => $sec_description, 'order_loc' => $sec_order ), array( 'id' => $sec_id) );
 	
 	//create html and return
@@ -1400,7 +1426,7 @@ function eval_delete_section() {
 	
 	//delete course from table
 	global $wpdb;
-	$eval_sections_table_name = $wpdb->prefix . "seufolios_eval_sections"; 
+	$eval_sections_table_name = $wpdb->base_prefix . "seufolios_eval_sections"; 
 	$sql = "DELETE FROM $eval_sections_table_name WHERE id=$section_id";
 	$rows_affected = $wpdb->query($sql);
 	
@@ -1434,7 +1460,7 @@ function eval_add_question() {
 	
 	//insert new course in to table
 	global $wpdb;
-	$eval_questions_table_name = $wpdb->prefix . "seufolios_eval_questions"; 
+	$eval_questions_table_name = $wpdb->base_prefix . "seufolios_eval_questions"; 
 	$rows_affected = $wpdb->insert( $eval_questions_table_name, array( 'section_id' => $sec_id, 'slug' => $ques_slug, 'question' => $ques_question, 'type' => $ques_type, 'enabled' => $ques_enabled, 'order_loc' => $ques_order ) );
 	
 	//create html and return
@@ -1463,7 +1489,7 @@ function eval_edit_question() {
 	
 	//edit section in wpdb
 	global $wpdb;
-	$eval_questions_table_name = $wpdb->prefix . "seufolios_eval_questions"; 
+	$eval_questions_table_name = $wpdb->base_prefix . "seufolios_eval_questions"; 
 	$rows_affected = $wpdb->update( $eval_questions_table_name, array( 'slug'=>$slug, 'question'=>$question, 'type'=>$type, 'enabled'=>$enabled, 'order_loc'=>$q_order), array( 'id' => $id) );
 	
 	//create html and return
@@ -1478,7 +1504,7 @@ function eval_delete_question() {
 	
 	//delete course from table
 	global $wpdb;
-	$eval_questions_table_name = $wpdb->prefix . "seufolios_eval_questions"; 
+	$eval_questions_table_name = $wpdb->base_prefix . "seufolios_eval_questions"; 
 	$sql = "DELETE FROM $eval_questions_table_name WHERE id=$question_id";
 	$rows_affected = $wpdb->query($sql);
 	

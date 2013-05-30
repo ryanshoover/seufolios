@@ -27,7 +27,7 @@ function setup_seufolios_db() {
    
    if( $installed_ver != $seufolios_db_version ) {
 	  //Departments
-	  $dept_table_name = $wpdb->prefix . "seufolios_depts"; 
+	  $dept_table_name = $wpdb->base_prefix . "seufolios_depts"; 
 	  $sql_dept = "CREATE TABLE $dept_table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		abbr CHAR(4) NOT NULL,
@@ -37,7 +37,7 @@ function setup_seufolios_db() {
 	  dbDelta($sql_dept);
   
 	  //Taxonomies	
-	  $taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	  $taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
 	  $sql_taxes = "CREATE TABLE $taxes_table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		dept_id mediumint(9) NOT NULL,
@@ -49,7 +49,7 @@ function setup_seufolios_db() {
 	  dbDelta($sql_taxes);
   
 	  //Evaluation Sections	
-	  $eval_sections_table_name = $wpdb->prefix . "seufolios_eval_sections"; 
+	  $eval_sections_table_name = $wpdb->base_prefix . "seufolios_eval_sections"; 
 	  $sql_eval_sections = "CREATE TABLE $eval_sections_table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		dept_id mediumint(9) NOT NULL,
@@ -61,7 +61,7 @@ function setup_seufolios_db() {
 	  dbDelta($sql_eval_sections);
 	  
 	  //Evaluation Questions (subset of sections)
-	  $eval_questions_table_name = $wpdb->prefix . "seufolios_eval_questions"; 
+	  $eval_questions_table_name = $wpdb->base_prefix . "seufolios_eval_questions"; 
 	  $sql_eval_questions = "CREATE TABLE $eval_questions_table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		section_id mediumint(9) NOT NULL,
@@ -75,7 +75,7 @@ function setup_seufolios_db() {
 	  dbDelta($sql_eval_questions);
 	  
 	  //evaluations table
-	  $eval_table_name = $wpdb->prefix . "seufolios_evaluations"; 
+	  $eval_table_name = $wpdb->base_prefix . "seufolios_evaluations"; 
 	  $sql_eval = "CREATE TABLE $eval_table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		profid mediumint(9) NOT NULL,
@@ -89,7 +89,7 @@ function setup_seufolios_db() {
 	  dbDelta($sql_eval);
 	  
 	  //Eval question types
-	  $eval_table_name = $wpdb->prefix . "seufolios_eval_ques_types"; 
+	  $eval_table_name = $wpdb->base_prefix . "seufolios_eval_ques_types"; 
 	  $sql_eval = "CREATE TABLE $eval_table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		slug tinytext NOT NULL,
@@ -100,7 +100,7 @@ function setup_seufolios_db() {
 	  dbDelta($sql_eval);
 	  
 	  //Help bubble text
-	  $help_table_name = $wpdb->prefix . "seufolios_help"; 
+	  $help_table_name = $wpdb->base_prefix . "seufolios_help"; 
 	  $sql_help = "CREATE TABLE $help_table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		help_key TINYTEXT NOT NULL,
@@ -110,7 +110,7 @@ function setup_seufolios_db() {
 	  dbDelta($sql_help);
 	  
 	  //Star-favorites table
-	  $star_table_name = $wpdb->prefix . "seufolios_folios2eval"; 
+	  $star_table_name = $wpdb->base_prefix . "seufolios_folios2eval"; 
 	  $sql_star = "CREATE TABLE $star_table_name (
 		id mediumint(9) NOT NULL AUTO_INCREMENT,
 		blogid mediumint(9) NOT NULL,
@@ -127,10 +127,10 @@ function setup_seufolios_db() {
 // *** Generic Department functions
 function get_depts() {
 	global $wpdb;
-	$dept_table_name = $wpdb->prefix . 'seufolios_depts';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
+	$dept_table_name = $wpdb->base_prefix . 'seufolios_depts'; 
 	 
 	$sql = "SELECT * FROM $dept_table_name ORDER BY abbr ASC";
-	
+
 	$results = $wpdb->get_results($sql);
 	
 	return $results;	
@@ -138,9 +138,9 @@ function get_depts() {
 
 function get_taxes($dept_id) {
 	global $wpdb;
-	$taxes_table_name = $wpdb->prefix . "seufolios_taxes"; 
+	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
 	$sql = "SELECT * FROM $taxes_table_name WHERE dept_id = $dept_id ORDER BY taxonomy";
-	
+
 	$results = $wpdb->get_results($sql);
 	
 	return $results;
@@ -148,7 +148,7 @@ function get_taxes($dept_id) {
 
 function get_courses($dept_id) {
 	global $wpdb;
-	$courses_table_name = $wpdb->prefix . "seufolios_courses"; 
+	$courses_table_name = $wpdb->base_prefix . "seufolios_courses"; 
 	$sql = "SELECT * FROM $courses_table_name WHERE dept_id = $dept_id ORDER BY number ASC";
 	
 	$results = $wpdb->get_results($sql);
@@ -158,7 +158,7 @@ function get_courses($dept_id) {
 
 function get_sections($dept_id) {
 	global $wpdb;
-	$sections_table_name = $wpdb->prefix . "seufolios_eval_sections"; 
+	$sections_table_name = $wpdb->base_prefix . "seufolios_eval_sections"; 
 	$sql = "SELECT * FROM $sections_table_name WHERE dept_id = $dept_id ORDER BY order_loc ASC";
 	
 	$results = $wpdb->get_results($sql);
@@ -168,7 +168,7 @@ function get_sections($dept_id) {
 
 function get_questions($sec_id) {
 	global $wpdb;
-	$questions_table_name = $wpdb->prefix . "seufolios_eval_questions"; 
+	$questions_table_name = $wpdb->base_prefix . "seufolios_eval_questions"; 
 	$sql = "SELECT * FROM $questions_table_name WHERE section_id = $sec_id ORDER BY order_loc ASC";
 	
 	$results = $wpdb->get_results($sql);
@@ -191,7 +191,7 @@ function get_the_user_role($user) {
 		return 'Administrator'; //Give admins and superadmins Administrator role
 			
 	foreach($wp_roles->role_names as $role => $Role) {
-	  $caps = $wpdb->prefix . 'capabilities'; 
+	  $caps = $wpdb->base_prefix . 'capabilities'; 
 	  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
 		  return $Role; 
 	  } 

@@ -291,7 +291,7 @@ function add_eval_type_delete_ajax() {
 
 function get_question_types() {
 	global $wpdb;
-	$eval_table_name = 'wp_seufolios_eval_ques_types';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
+	$eval_table_name = $wpdb->base_prefix . 'seufolios_eval_ques_types'; 
 	 
 	$sql = "SELECT * FROM $eval_table_name ORDER BY slug ASC";
 	
