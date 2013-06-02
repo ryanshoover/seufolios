@@ -323,15 +323,20 @@ jQuery(function() {
 		if (html5) {
 			step[jQuery(inputs[i]).attr('id')] = (jQuery(inputs[i]).width() / ( jQuery(inputs[i]).attr('max')-jQuery(inputs[i]).attr('min') ) ) *0.95;
 			//set initial placement
-			jQuery('#' + jQuery(inputs[i]).attr('id').replace('_input', '_displayvalue') ).css('margin-left', ( step[jQuery(inputs[i]).attr('id')] * ( jQuery(inputs[i]).val() - jQuery(inputs[i]).attr('min') ) ) -3 + 'px' );
+			jQuery('#' + jQuery(inputs[i]).attr('id').replace('_input', '_displayvalue') ).css('margin-left', ( step[jQuery(inputs[i]).attr('id')] * ( jQuery(inputs[i]).val() - jQuery(inputs[i]).attr('min') ) ) -1 + 'px' );
 			//change with slider movement
 			jQuery(inputs[i]).change(function() {
-				jQuery('#' + jQuery(this).attr('id').replace('_input', '_displayvalue') ).css('margin-left', ( step[jQuery(this).attr('id')] * ( jQuery(this).val() - jQuery(this).attr('min') ) ) -3 + 'px' );
+				jQuery('#' + jQuery(this).attr('id').replace('_input', '_displayvalue') ).css('margin-left', ( step[jQuery(this).attr('id')] * ( jQuery(this).val() - jQuery(this).attr('min') ) ) -1 + 'px' );
 			});
 			
 		}
 		else {
-			//needs done
+			//set initial placement
+			jQuery('#' + jQuery(inputs[i]).attr('id').replace('_input', '_displayvalue') ).css('margin-left', parseFloat(jQuery(inputs[i]).parent().children('.handle').css('left')) + 5 +'px'  );
+			//change with slider movement
+			jQuery(inputs[i]).change(function() {
+				jQuery('#' + jQuery(this).attr('id').replace('_input', '_displayvalue') ).css('margin-left', parseFloat(jQuery(this).parent().children('.handle').css('left')) + 5 +'px' );
+			});
 		}
 	}
 	 

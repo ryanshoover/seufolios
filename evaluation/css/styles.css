@@ -136,11 +136,12 @@ html, body {
 	text-align:center;
 	font-size:12px;
 	height:12px;
+	line-height:13px;
 	width:16px;
 	
-	padding:3px;
+	padding:2px 2px 4px 2px;
 	background-color: #fff;
-	border:thin solid #ccc;
+	border:1px solid #ccc;
 }
 
 /*pointer below box*/
@@ -148,12 +149,12 @@ html, body {
     content: ' ';
     display: block;
     position: absolute;
-    left: 8px;
+    left: 6px;
     top: 15px;
     width: 6px;
     height: 6px;
     border-color: #ccc;
-    border-width: thin;
+    border-width: 1px;
     border-style: none solid solid none;
     background-color: #fff;
     transform: rotate(45deg);
