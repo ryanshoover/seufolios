@@ -197,8 +197,8 @@ function setupSliders() {
 	//test to see if range input can exist
 	var testrange=document.createElement("input")
 	testrange.setAttribute("type", "range") 
-	if (testrange.type=="range") var html5 = true;
-	else var html5 = false;
+	if (testrange.type=="range") html5 = true;
+	else html5 = false;
 
 	var sliders = new Array();
 	var divs = jQuery('.slider');
@@ -307,12 +307,35 @@ function setupStar() {
 var ajaxTimer;
 var submitTimer;
 var inputs = new Array();
+var step = new Array();
 var dataString = '';
 var starIcon = <?php if($favorite) echo 0; else echo 1; ?>;
 setupSliders();
 setupEventListeners();
 setupTrashcan();
 setupStar();
+
+jQuery(function() {
+	inputs = jQuery('.slider-input');
+	input_values = jQuery('.input_value');
+
+	for(i=0; i<inputs.length; i++) {
+		if (html5) {
+			step[jQuery(inputs[i]).attr('id')] = (jQuery(inputs[i]).width() / ( jQuery(inputs[i]).attr('max')-jQuery(inputs[i]).attr('min') ) ) *0.95;
+			//set initial placement
+			jQuery('#' + jQuery(inputs[i]).attr('id').replace('_input', '_displayvalue') ).css('margin-left', ( step[jQuery(inputs[i]).attr('id')] * ( jQuery(inputs[i]).val() - jQuery(inputs[i]).attr('min') ) ) -3 + 'px' );
+			//change with slider movement
+			jQuery(inputs[i]).change(function() {
+				jQuery('#' + jQuery(this).attr('id').replace('_input', '_displayvalue') ).css('margin-left', ( step[jQuery(this).attr('id')] * ( jQuery(this).val() - jQuery(this).attr('min') ) ) -3 + 'px' );
+			});
+			
+		}
+		else {
+			//needs done
+		}
+	}
+	 
+});
 </script>
 
 

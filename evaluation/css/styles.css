@@ -129,19 +129,36 @@ html, body {
 }
 
 .major_section .input_value {
-	margin:0.2em auto;
+	position:absolute;
+	z-index: 5;
+	margin-top: -1px;
+	
 	text-align:center;
-	font-size:0.9em;
-	height:1.2em;
-	width:30px;
+	font-size:12px;
+	height:12px;
+	width:16px;
 	
 	padding:3px;
-	background-color:#f8f8f8;
+	background-color: #fff;
 	border:thin solid #ccc;
-	border-radius:7px;
-	-moz-box-shadow:    inset 0 0 7px #999;
-   	-webkit-box-shadow: inset 0 0 7px #999;
-   	box-shadow:         inset 0 0 7px #999;
+}
+
+/*pointer below box*/
+.input_value:before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    left: 8px;
+    top: 15px;
+    width: 6px;
+    height: 6px;
+    border-color: #ccc;
+    border-width: thin;
+    border-style: none solid solid none;
+    background-color: #fff;
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
 }
 
 
