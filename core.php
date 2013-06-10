@@ -128,11 +128,8 @@ function setup_seufolios_db() {
 function get_depts() {
 	global $wpdb;
 	$dept_table_name = $wpdb->base_prefix . 'seufolios_depts'; 
-	 
 	$sql = "SELECT * FROM $dept_table_name ORDER BY abbr ASC";
-
 	$results = $wpdb->get_results($sql);
-	
 	return $results;	
 }
 
@@ -140,9 +137,7 @@ function get_taxes($dept_id) {
 	global $wpdb;
 	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
 	$sql = "SELECT * FROM $taxes_table_name WHERE dept_id = $dept_id ORDER BY taxonomy";
-
 	$results = $wpdb->get_results($sql);
-	
 	return $results;
 }
 
@@ -150,9 +145,7 @@ function get_courses($dept_id) {
 	global $wpdb;
 	$courses_table_name = $wpdb->base_prefix . "seufolios_courses"; 
 	$sql = "SELECT * FROM $courses_table_name WHERE dept_id = $dept_id ORDER BY number ASC";
-	
 	$results = $wpdb->get_results($sql);
-	
 	return $results;
 }
 
@@ -160,9 +153,7 @@ function get_sections($dept_id) {
 	global $wpdb;
 	$sections_table_name = $wpdb->base_prefix . "seufolios_eval_sections"; 
 	$sql = "SELECT * FROM $sections_table_name WHERE dept_id = $dept_id ORDER BY order_loc ASC";
-	
 	$results = $wpdb->get_results($sql);
-	
 	return $results;
 }
 
@@ -170,9 +161,15 @@ function get_questions($sec_id) {
 	global $wpdb;
 	$questions_table_name = $wpdb->base_prefix . "seufolios_eval_questions"; 
 	$sql = "SELECT * FROM $questions_table_name WHERE section_id = $sec_id ORDER BY order_loc ASC";
-	
 	$results = $wpdb->get_results($sql);
-	
+	return $results;
+}
+
+function get_question_types() {
+	global $wpdb;
+	$eval_table_name = $wpdb->base_prefix . 'seufolios_eval_ques_types';	 
+	$sql = "SELECT * FROM $eval_table_name ORDER BY slug ASC";
+	$results = $wpdb->get_results($sql);
 	return $results;
 }
 

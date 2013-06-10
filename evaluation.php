@@ -288,14 +288,3 @@ function add_eval_type_delete_ajax() {
 	echo create_eval_q_table();
 	die();
 }
-
-function get_question_types() {
-	global $wpdb;
-	$eval_table_name = $wpdb->base_prefix . 'seufolios_eval_ques_types'; 
-	 
-	$sql = "SELECT * FROM $eval_table_name ORDER BY slug ASC";
-	
-	$results = $wpdb->get_results($sql);
-	
-	return $results;
-}
