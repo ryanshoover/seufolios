@@ -2,6 +2,9 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<style>
+html, body { height: 100%; width: 100%; margin: 0; padding: 0;}
+</style>
 </head>
 
 <body onLoad="showSection(0);">
@@ -138,14 +141,15 @@ echo $script;
 <script type="text/javascript" src="js/slider.js"></script>
 <script type="text/javascript" src="js/scripts.js"></script>
 <link type="text/css" rel="StyleSheet" href="css/bluecurve/bluecurve.css" />
-<link type="text/css" rel="StyleSheet" href="css/styles.css" />
+<link type="text/css" rel="StyleSheet" href="css/styles.css?ver=3.5.1" />
 
-<div id="full">
-    <form name="evaluation" id="evaluation" action="finalSave.php" method="post">
-    <input type="hidden" id='profid' name='profid' value='<?php echo $saved_values['profid']; ?>'>
-    <input type="hidden" id='studentid' name='studentid' value='<?php echo $saved_values['studentid']; ?>'>
-    <input type="hidden" id='wp_path' name='wp_path' value='<?php echo urlencode($wp_path);  ?>'>
-    
+
+<form name="evaluation" id="evaluation" action="finalSave.php" method="post">
+  <input type="hidden" id='profid' name='profid' value='<?php echo $saved_values['profid']; ?>'>
+  <input type="hidden" id='studentid' name='studentid' value='<?php echo $saved_values['studentid']; ?>'>
+  <input type="hidden" id='wp_path' name='wp_path' value='<?php echo urlencode($wp_path);  ?>'>
+
+  <div id="full">
     <ul id="navigation">
     	<?php
 		$sec_num = 0;
@@ -186,14 +190,13 @@ echo $script;
 
     <div id="buttons">
         <button value='submit'>Submit final evaluation</button>
-        <img src="trash.png" id="delete-entry" class="icon">
+        <img src="trash.png" id="delete-entry" class="icon" title="Delete evaluation">
         <div id="star-entry" class="icon<?php if($favorite) echo ' starred'; ?>" title="Mark as favorite"></div>
         <div id='savestatus'>&nbsp;</div>
     </div>
-    </form>
-</div><!--full-->
-
-<script type="text/javascript" src="js/evalhtml_scripts.js"></script>
+   
+  </div><!--full-->
+</form>
 
 
 </body>

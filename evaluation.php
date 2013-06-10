@@ -25,8 +25,11 @@ function toolbar_scripts_method() {
 	$site_details = get_blog_details($blog_id, 'siteurl');
 	
 	if($user_role == 'Professor' || $user_role == 'Super_admin') {
-		wp_enqueue_script('seufolios_iframe_script', plugins_url( 'evaluation/js/scripts.js' , __FILE__ ) );
-		wp_enqueue_style( 'prefix-style', plugins_url('evaluation/css/styles.css', __FILE__) );
+		wp_enqueue_script('jquery-ui-core');
+		wp_enqueue_script('jquery-ui-resizable');
+		wp_enqueue_style('jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/start/jquery-ui.css');
+		wp_enqueue_script('seufolios_iframe_script', plugins_url( 'evaluation/js/iframe.js' , __FILE__ ) );
+		wp_enqueue_style( 'prefix-style', plugins_url('evaluation/css/iframe.css', __FILE__) );
 	}
 }
 
