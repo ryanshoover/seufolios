@@ -32,7 +32,7 @@ function include_professors() {
 	$admin_id = get_user_id_from_string( get_blog_option($current_blog->blog_id, 'admin_email'));
 	$blog_major = get_user_major(); //get_the_user_major($admin_id);
 	//var_dump($blog_major);
-	if ( ($GLOBALS[blog_id]) != 1 ) { //makes sure it's not the root blog
+	if ( ($GLOBALS['blog_id']) != 1 ) { //makes sure it's not the root blog
 		$args =  array(
 				  'blog_id' => 1,
 				  'role' => 'professor'
