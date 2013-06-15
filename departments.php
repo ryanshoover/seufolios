@@ -9,7 +9,7 @@ require_once('classes/wp-admin-menu-classes.php'); //allows us to modify the ord
 
 //***WP Hooks
 //Add user profile w WP hooks
-add_action('signup_extra_fields', 'add_custom_signup_fields');
+//add_action('signup_extra_fields', 'add_custom_signup_fields');
 add_action( 'show_user_profile', 'add_custom_user_profile_fields' );
 add_action( 'edit_user_profile', 'add_custom_user_profile_fields' );
 add_action( 'personal_options_update', 'save_custom_user_profile_fields' );
@@ -29,9 +29,13 @@ add_action('wp_ajax_set_default_dept', 'set_default_dept_ajax' );
 
 //Setup department taxonomy settings page
 add_action('wp_ajax_tax_select_dept', 'tax_select_dept_ajax');
+add_action('wp_ajax_tax_show_terms', 'tax_show_terms_ajax');
 add_action('wp_ajax_tax_add_tax', 'tax_add_tax_ajax');
 add_action('wp_ajax_tax_edit_tax', 'tax_edit_tax_ajax');
 add_action('wp_ajax_tax_delete_tax', 'tax_delete_tax_ajax');
+add_action('wp_ajax_tax_add_term', 'tax_add_term_ajax');
+add_action('wp_ajax_tax_edit_term', 'tax_edit_term_ajax');
+add_action('wp_ajax_tax_delete_term', 'tax_delete_term_ajax');
 
 //Setup department courses settings pages
 add_action('wp_ajax_add_dept_submit', 'add_dept_save_ajax' );
@@ -186,7 +190,7 @@ function setup_custom_tax() {
 	}
 	$post_types = get_post_types();
 	unset($post_types['attachment'], $post_types['revision'], $post_types['nav_menu_item']);
-	
+	/*
 	foreach($taxes as $tax=>$terms) {
 		$tax = strtolower(str_replace(' ', '_', $tax));
 		register_taxonomy(
@@ -211,7 +215,8 @@ function setup_custom_tax() {
 				  );
 			}
 		}
-	}
+		
+	}*/
 }
 
 function setup_rats_student() {
@@ -563,8 +568,6 @@ function control_tax_list() {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
 	
-	$q_types = get_question_types();
-	
 	?>
 	<style>
 	div.main_group {
@@ -591,21 +594,22 @@ function control_tax_list() {
 		background-color:#FFF !important; 
 		font-weight:bold;
 	}
-	table.seufolios td.question { width:200px; }
 	td.desc {
 		font-size:0.8em;
 		font-weight:400;
 		color:gray;
 	}
+	table.seufolios td.question { width:200px; }
 	td.title {padding-left:5px;}
 	
-	div#taxes_form {	display:none; }
+	div#taxes_form { display:none; }
+	div#tax_terms_form { display:none; }
 	form * {vertical-align:middle;}
 	form.inline * {padding:0; margin:0; height:20px;}
 	.align_right {text-align:right; margin-right:2em;}
 	</style>
 	<div class="wrap">
-        <h2>Department Taxonomies</h2>
+        <h2>Department Taxonomies and Post Types</h2>
         <div id="choose_dept">
         	<form name="choose_dept" id="choose_dept">
                 <select name="dept_select" id="dept_select">
@@ -626,17 +630,36 @@ function control_tax_list() {
                 
             </div>
             <div id="taxes_form">
-                <h3>Add New Taxonomy Term</h3>
+                <h3>Add New Taxonomy</h3>
                 <form name="add_new_tax" id="add_new_tax" method="POST">
                 	<table>
                     <tr>
-                    <td class="align_right"><label for="taxonomy">Taxonomy</label></td><td><input type="text" name="taxonomy" size="10"></td>
+                    <td class="align_right"><label for="tax_slug">Taxonomy</label></td><td><input type="text" name="tax_slug" size="10"></td>
                     </tr><tr>
+                    <td class="align_right"><label for="tax_settings">Settings</label></td><td><textarea name="tax_settings"></textarea></td>
+                    </tr><tr>
+                    <td class="align_right"></td><td><input type="submit" value="Add Taxonomy" /></td>
+                    </tr></table>
+                </form>
+            </div>
+        </div>
+        
+        <!--Terms-->
+        <div id="terms" class="main_group">
+            <div id="terms_list">
+                
+            </div>
+            <div id="tax_terms_form">
+                <h3>Add New Term</h3>
+                <form name="add_new_term" id="add_new_term" method="POST">
+                	<input type="hidden" name="tax_id" id="tax_id" value="">
+                	<table>
+                    <tr>
                     <td class="align_right"><label for="term_slug">Term Slug</label></td><td><input type="text" name="term_slug" size="5"></td>
                     </tr><tr>
                     <td class="align_right"><label for="term_title">Term Title</label></td><td><input type="text" name="term_title" size="20"></td>
 					</tr><tr>
-                    <td class="align_right"></td><td><input type="submit" value="Add Section" /></td>
+                    <td class="align_right"></td><td><input type="submit" value="Add Term" /></td>
                     </tr></table>
                 </form>
             </div>
@@ -656,12 +679,32 @@ function control_tax_list() {
 				  function (response) {
 					  jQuery('#taxes_list').html(response);
 				  });
-			document.getElementById('taxes_form').style.display = 'block';
+			jQuery('#taxes_form').css('display','block');
 		});
+		
+		//Show terms
+		function show_terms(tax_id, button) {
+			jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_show_terms', 
+					'data': tax_id
+				  },
+				  function (response) {
+					  jQuery('#terms_list').html(response);
+				  });
+		  jQuery('#tax_terms_form').css('display','block');
+		  jQuery('#tax_id').val(tax_id);
+		  
+		  //reset selected class
+		  jQuery('.selected').removeClass(); 
+		  //add new selected class
+		  var tableRow = button.parentNode.parentNode;
+		  tableRow.className = 'selected';
+		  return false;	
+		}
 		
 		//Add new tax
 		jQuery('#add_new_tax').submit(function() {
-		  
 		  var b = jQuery(this).serialize() + '&dept_id=' + jQuery('#dept_select').val();
 		  jQuery.post( ajaxurl, 
 		  		  {
@@ -681,25 +724,23 @@ function control_tax_list() {
 		
 		//Edit a tax
 		function edit_tax(id) {
-			var tr = document.getElementById('tax_row_'+id);
 			var tds = jQuery('#tax_row_'+id+' td');
-			var old_tax = tds[0].innerHTML;
-			var old_term_slug = tds[1].innerHTML;
-			var old_term_title = tds[2].innerHTML;
-			var innerHTML = "<td><input type='hidden' name='tax_id' id='tax_id' value='" + id + "'>" +
-							"<input type='text' name='taxonomy' id='taxonomy' size='10' value='" +old_tax+ "'></td>" +
-							"<td><input type='text' name='term_slug' id='term_slug' size='10' value='" +old_term_slug+ "'></td>" +
-							"<td><input type='text' name='term_title' id='term_title' size='10' value='"+old_term_title+"'></td>" +
+			var old_tax_slug = tds[0].innerHTML;
+			var old_tax_settings = tds[1].innerHTML;
+			var innerHTML = "<td><input class='edit_form_field' type='hidden' name='tax_id' id='tax_id' value='" + id + "'>" +
+							"<input class='edit_form_field' type='text' name='tax_slug' id='tax_slug' size='10' value='" +old_tax_slug+ "'></td>" +
+							"<td><textarea class='edit_form_field' name='tax_settings' id='tax_settings'>"+old_tax_settings+"</textarea>" +
 							"<td><button type='submit' onclick='edit_tax_submit();'>Done</button> &nbsp; " +
 							"<button id='delete_"+id+"' class='delete_button' type='button' onclick='delete_tax("+id+")'>Delete</button></td>";
 			
-			tr.innerHTML = innerHTML;
+			jQuery('#tax_row_'+id).html(innerHTML);
 			return false;	
 		}
 		
 		//Submit the Edit Section
 		function edit_tax_submit() {
-		  var b = jQuery("#tax_id, #taxonomy, #term_slug, #term_title").serialize() + '&dept_id=' + jQuery('#dept_select').val();
+		  var b = jQuery(".edit_form_field").serialize() + '&dept_id=' + jQuery('#dept_select').val();
+		  console.log(b);
 		  jQuery.post( ajaxurl, 
 		  		  {
 		  			'action':'tax_edit_tax', 
@@ -724,6 +765,69 @@ function control_tax_list() {
 		  
 		  return false;			
 		}
+		
+		//Add new term
+		jQuery('#add_new_term').submit(function() {
+		  var b = jQuery(this).serialize() + '&dept_id=' + jQuery('#dept_select').val();
+		  jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_add_term', 
+					'data': b
+				  },
+				  function (response) {
+					  jQuery('#terms_list').html(response);
+				  });
+				  
+		  jQuery(this).each (function(){
+			this.reset();
+		  });
+		  
+		  return false;
+		});
+		
+		//Edit a term
+		function edit_term(id) {
+			var tds = jQuery('#term_row_'+id+' td');
+			var old_term_slug = tds[0].innerHTML;
+			var old_term_title = tds[1].innerHTML;
+			var innerHTML = "<td><input class='edit_form_field' type='hidden' name='term_id' id='term_id' value='" + id + "'>" +
+							"<input class='edit_form_field' type='hidden' name='tax_id' id='tax_id' value='" + jQuery('div#taxes_list table tr.selected').attr('id').match(/[\d]+$/) + "'>" +
+							"<input class='edit_form_field' type='text' name='term_slug' id='term_slug' size='10' value='" +old_term_slug+ "'></td>" +
+							"<td><input class='edit_form_field' type='text' name='term_title' id='term_title' size='10' value='"+old_term_title+"'></td>" +
+							"<td><button type='submit' onclick='edit_term_submit();'>Done</button> &nbsp; " +
+							"<button id='delete_"+id+"' class='delete_button' type='button' onclick='delete_term("+id+")'>Delete</button></td>";
+			jQuery('#term_row_'+id).html(innerHTML);
+			return false;	
+		}
+		
+		//Submit the Edit Term
+		function edit_term_submit() {
+		  var b = jQuery(".edit_form_field").serialize();
+		  console.log(b);
+		  jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_edit_term', 
+					'data': b
+				  },
+				  function (response) {
+					  jQuery('#terms_list').html(response);
+				  });
+		  return false;
+		}
+		
+		//Delete a term
+		function delete_term(term_id) {
+			jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_delete_term', 
+					'data': jQuery('.edit_form_field').serialize(),
+				  },
+				  function (response) {
+					  jQuery('#terms_list').html(response);
+				  });
+		  
+		  return false;			
+		}
 	</script>
     
     <?php
@@ -733,10 +837,30 @@ function create_tax_table($dept_id) {
 //used in taxes network admin page
 	//create html and return
 	$result = "<table class='seufolios'>
-		<tr><th>Taxonomy</th><th>Term Slug</th><th>Term Title</th><th></th></tr>";
+		<tr><th>Taxonomy Slug</th><th>Settings</th><th></th></tr>";
 	$taxes = get_taxes($dept_id);
 	foreach($taxes as $tax)
-		$result .= "<tr id='tax_row_$tax->id'><td>$tax->taxonomy</td><td>$tax->term_slug</td><td>$tax->term_title</td> <td><button id='edit_$tax->id' class='edit_button' type='button' onclick='edit_tax($tax->id)'>Edit</button></td></tr>\n";	
+		$result .= "
+		<tr id='tax_row_$tax->id'>
+		<td>$tax->tax_slug</td>
+		<td>$tax->tax_settings</td>
+		<td><button id='edit_$tax->id' class='edit_button' type='button' onclick='edit_tax($tax->id)'>Edit</button>
+		<button id='show_terms_$tax->id' class='show_terms_button' type='button' onclick='show_terms($tax->id, this)'>&raquo;</button></td></tr>\n</td>
+		</tr>\n";	
+	
+	$result .= "</table>";
+	
+	return $result;
+}
+
+function create_terms_table($tax_id) {
+//used in taxes network admin page
+	//create html and return
+	$result = "<table class='seufolios'>
+		<tr><th>Term Slug</th><th>Term Title</th><th></th></tr>";
+	$terms = get_tax_terms($tax_id);
+	foreach($terms as $term)
+		$result .= "<tr id='term_row_$term->id'><td>$term->term_slug</td><td>$term->term_title</td> <td><button id='edit_$term->id' class='edit_button' type='button' onclick='edit_term($term->id)'>Edit</button></td></tr>\n";	
 	
 	$result .= "</table>";
 	
@@ -749,6 +873,12 @@ function tax_select_dept_ajax() {
 	die();
 }
 
+function tax_show_terms_ajax() {
+	$tax_id = $_POST['data'];
+	echo create_terms_table($tax_id);
+	die();
+}
+
 function tax_add_tax_ajax() {
 	//used in taxes network page to save a new taxonomy	
 	//create array from post data
@@ -757,7 +887,7 @@ function tax_add_tax_ajax() {
 	//insert new dept in to table
 	global $wpdb;
 	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
-	$rows_affected = $wpdb->insert( $taxes_table_name, array( 'dept_id' => $data['dept_id'], 'taxonomy' => $data['taxonomy'], 'term_slug' => $data['term_slug'], 'term_title' => $data ['term_title'] ) );
+	$rows_affected = $wpdb->insert( $taxes_table_name, array( 'dept_id' => $data['dept_id'], 'tax_slug' => $data['tax_slug'], 'tax_settings' => $data['tax_settings'] ) );
 	
 	$result = create_tax_table($data['dept_id']);
 	
@@ -772,7 +902,7 @@ function tax_edit_tax_ajax() {
 	
 	global $wpdb;
 	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
-	$rows_affected = $wpdb->update( $taxes_table_name, array( 'taxonomy' => $data['taxonomy'], 'term_slug' => $data['term_slug'], 'term_title' => $data ['term_title'] ), array( 'id' => $data['tax_id'])  );
+	$rows_affected = $wpdb->update( $taxes_table_name, array( 'tax_slug' => $data['tax_slug'], 'tax_settings' => $data ['tax_settings'] ), array( 'id' => $data['tax_id'])  );
 	
 	echo create_tax_table($data['dept_id']);
 	die();
@@ -791,6 +921,50 @@ function tax_delete_tax_ajax() {
 	echo create_tax_table($data['dept_id']);
 	die();
 }
+
+function tax_add_term_ajax() {
+	//used in taxes network page to save a new taxonomy	
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	
+	//insert new dept in to table
+	global $wpdb;
+	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
+	$rows_affected = $wpdb->insert( $terms_table_name, array( 'tax_id' => $data['tax_id'], 'term_slug' => $data['term_slug'], 'term_title' => $data['term_title'] ) );
+	
+	$result = create_terms_table($data['tax_id']);
+	
+	echo $result;
+	die();
+}
+
+function tax_edit_term_ajax() {
+//edit existing taxonomy
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	
+	global $wpdb;
+	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
+	$rows_affected = $wpdb->update( $terms_table_name, array('term_slug' => $data['term_slug'], 'term_title' => $data ['term_title'] ), array( 'id' => $data['term_id'])  );
+	
+	echo create_terms_table($data['tax_id']);
+	die();
+}
+
+function tax_delete_term_ajax() {
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	
+	//delete course from table
+	global $wpdb;
+	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
+	$sql = "DELETE FROM $terms_table_name WHERE id=" .$data['term_id'];
+	$rows_affected = $wpdb->query($sql);
+	
+	echo create_terms_table($data['tax_id']);
+	die();
+}
+
 
 function control_course_list() {
 //creates the courses network admin page

@@ -5,7 +5,7 @@
 
 //set up database version number
 global $seufolios_db_version;
-$seufolios_db_version = "2.4";
+$seufolios_db_version = "2.5";
 
 //test for manual activation / initial install of plugin
 register_activation_hook( plugins_url("", __FILE__) .'/SEUFolios.php' , 'setup_seufolios_db' );
@@ -39,23 +39,33 @@ function setup_seufolios_db() {
 	  //Taxonomies	
 	  $taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
 	  $sql_taxes = "CREATE TABLE $taxes_table_name (
-		id mediumint(9) NOT NULL AUTO_INCREMENT,
-		dept_id mediumint(9) NOT NULL,
-		taxonomy tinytext NOT NULL,
-		term_slug tinytext NOT NULL,
-		term_title tinytext NOT NULL,
+		id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+		dept_id MEDIUMINT(9) NOT NULL,
+		tax_slug TINYTEXT NOT NULL,
+		tax_settings MEDIUMTEXT,
 		UNIQUE KEY id (id)
 	  );";
 	  dbDelta($sql_taxes);
-  
+	  
+	  //Taxonomy Terms
+	  $terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
+	  $sql_terms = "CREATE TABLE $terms_table_name (
+		id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+		tax_id MEDIUMINT(9) NOT NULL,
+		term_slug TINYTEXT NOT NULL,
+		term_title TINYTEXT NOT NULL,
+		UNIQUE KEY id (id)
+	  );";
+	  dbDelta($sql_terms);
+
 	  //Evaluation Sections	
 	  $eval_sections_table_name = $wpdb->base_prefix . "seufolios_eval_sections"; 
 	  $sql_eval_sections = "CREATE TABLE $eval_sections_table_name (
-		id mediumint(9) NOT NULL AUTO_INCREMENT,
-		dept_id mediumint(9) NOT NULL,
-		title tinytext NOT NULL,
-		description tinytext,
-		order_loc tinyint,
+		id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+		dept_id MEDIUMINT(9) NOT NULL,
+		title TINYTEXT NOT NULL,
+		description TINYTEXT,
+		order_loc TINYTEXT,
 		UNIQUE KEY id (id)
 	  );";
 	  dbDelta($sql_eval_sections);
@@ -136,7 +146,15 @@ function get_depts() {
 function get_taxes($dept_id) {
 	global $wpdb;
 	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
-	$sql = "SELECT * FROM $taxes_table_name WHERE dept_id = $dept_id ORDER BY taxonomy";
+	$sql = "SELECT * FROM $taxes_table_name WHERE dept_id = $dept_id ORDER BY tax_slug";
+	$results = $wpdb->get_results($sql);
+	return $results;
+}
+
+function get_tax_terms($tax_id) {
+	global $wpdb;
+	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
+	$sql = "SELECT * FROM $terms_table_name WHERE tax_id = $tax_id ORDER BY term_slug";
 	$results = $wpdb->get_results($sql);
 	return $results;
 }

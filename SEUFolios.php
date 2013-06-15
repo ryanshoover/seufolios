@@ -40,7 +40,7 @@ if(get_option('enable_seufolios_features') != 0) {
 	
 	//post visibility
 	require_once($plugin_url .'post_visibility.php');
-
+	
 } //end if get_option
 
 //***Functions
