@@ -53,7 +53,7 @@ function setup_seufolios_db() {
 		id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
 		tax_id MEDIUMINT(9) NOT NULL,
 		term_slug TINYTEXT NOT NULL,
-		term_title TINYTEXT NOT NULL,
+		term_settings TINYTEXT NOT NULL,
 		UNIQUE KEY id (id)
 	  );";
 	  dbDelta($sql_terms);

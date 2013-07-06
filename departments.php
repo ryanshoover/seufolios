@@ -176,48 +176,120 @@ function setup_custom_tax() {
 	}
 
 	switch ($major_abbr) {
-		//RATS
 		case 'RATS': 
 			setup_rats_student();	
 			break;
-		
 	}
 	
 	//get taxes from database, add to all post types
 	$taxes_arr = get_taxes($major);
 	foreach($taxes_arr as $t) {
-		$taxes[$t->taxonomy][$t->term_slug] = $t->term_title;
+		$taxes[$t->id]['slug'] = $t->tax_slug;
+		$taxes[$t->id]['settings'] = $t->tax_settings;
+		$taxes[$t->id]['terms'] = get_tax_terms($t->id);
 	}
+	
 	$post_types = get_post_types();
 	unset($post_types['attachment'], $post_types['revision'], $post_types['nav_menu_item']);
-	/*
-	foreach($taxes as $tax=>$terms) {
-		$tax = strtolower(str_replace(' ', '_', $tax));
-		register_taxonomy(
-			$tax,
-			$post_types,
-			array(
-				'label' => ucfirst($tax),			//uppercase first letter
-				'rewrite' => array('slug' => $tax ),
-				'show_admin_column' => true,
-				)
-			);
-		foreach($terms as $term=>$description) {
-			$term = strtolower(str_replace(' ', '_', $term));
-			if( !term_exists($term, $tax) ) {
-				wp_insert_term(
-					$term, 	// the term 
-					$tax, 	// the taxonomy
-					array(
-					  'description'=> $description,
-					  'slug' => $term,		
-					)
-				  );
+	
+	//create custom post types 
+	$create_posts = false;
+	foreach($taxes as $tax) {
+		if( strtolower($tax['slug']) == 'posts' ) 
+			$create_posts = true;
+	}
+	if ($create_posts) {
+		$reserved_posts = array('post', 'page','attachment','revision','nav_menu_item');
+		$slug = strtolower(str_replace(' ', '_', $tax['slug']));
+		$existing_taxes = get_taxonomies();
+		$default_settings = array('public' => true, 'capability_type' => 'page', 'hierarchical' => true, 'taxonomies' => $existing_taxes );
+		
+		if ( !in_array($slug, $reserved_posts) ) { 	// make sure we're not trying to add a reserved post type
+			foreach($tax['terms'] as $p) {
+				if(strlen($p->term_settings)) {
+					$saved_settings = array();
+					$settings_temp = explode("\n", $p->term_settings);
+					foreach($settings_temp as $st) {
+						$tmp = explode("=", $st, 2);
+						$tmp[1] = str_replace(', ', ',', $tmp[1]);
+						if(strpos($tmp[1], ',')) $tmp[1] = explode(',', $tmp[1]);
+						$saved_settings[ $tmp[0] ] = $tmp[1];
+					}
+					$settings = array_merge($default_settings, $saved_settings);
+				} else $settings = $default_settings;
+				
+				//$settings = ( is_array($p->term_settings) ? array_merge($default_settings, $p->term_settings) : $default_settings);	//merge the default settings and user settings
+				if(!isset($settings['label'])) $settings['label'] = str_replace(' ', '_', $p->term_slug); 
+				register_post_type(
+					strtolower(str_replace(' ', '_', $p->term_slug)), //post type slug
+					$settings	//settings
+				);
 			}
 		}
+	}
+	
+	//create taxonomies
+	// !!! still needs settings incorporated
+	foreach($taxes as $tax) {
+		if( strtolower($tax['slug']) != 'posts' ) {
+			$slug = strtolower(str_replace(' ', '_', $tax['slug']));
+			$default_settings = array(
+				'post_types' => $post_types,
+				'args'   => array('label'=>$slug, 'rewrite'=>array('slug'=>$slug), 'show_admin_column'=> true)
+			);
+			
+			$settings = array();
+			$saved_settings = array();
+			$settings_temp = explode("\n", $tax['settings']);
+			foreach($settings_temp as $st) {
+				$tmp = explode("=", $st, 2);
+				$tmp[1] = str_replace(', ', ',', $tmp[1]);
+				if(strpos($tmp[1], ',')) $tmp[1] = explode(',', $tmp[1]);
+				$saved_settings[ $tmp[0] ] = $tmp[1];
+			}
+			
+			if(isset($saved_settings['post_types'])) 
+				$settings['post_types'] = $saved_settings['post_types'];
+			else 
+				$settings['post_types'] = $default_settings['post_types'];
 		
-	}*/
-}
+			unset($saved_settings['post_types']);
+			$settings['args'] = array_merge($default_settings['args'], $saved_settings);
+			
+			register_taxonomy(
+				$slug,
+				$settings['post_types'],
+				$settings['args']
+			  );
+				
+			foreach($tax['terms'] as $term) {
+				$term_slug = strtolower(str_replace(' ', '_', $term->term_slug));
+				$default_settings = array('slug'=>$term_slug, 'description'=>$term_slug);
+				$settings = array();
+				$saved_settings = array();
+				
+				$settings_temp = explode("\n", $term->term_settings);
+				foreach($settings_temp as $st) {
+					$tmp = explode("=", $st, 2);
+					$tmp[1] = str_replace(', ', ',', $tmp[1]);
+					if(strpos($tmp[1], ',')) $tmp[1] = explode(',', $tmp[1]);
+					$saved_settings[ $tmp[0] ] = $tmp[1];
+				}
+				$settings = array_merge($default_settings, $saved_settings);
+				
+				if( !term_exists($term_slug, $slug) ) {
+					wp_insert_term(
+						$term_slug, 	// the term 
+						$slug, 			// the taxonomy
+						$settings 		// the settings
+					  );
+				} //if
+				
+			} //foreach
+		} //if
+		
+	} //foreach
+} //function
 
 function setup_rats_student() {
 //adds in features that are custom for RATS students
@@ -444,7 +516,7 @@ function meta_box_instruction($d) {
 
 function control_dept_info() {
 	add_menu_page('SEUFolios Departments', 'Departments', 'manage_options', 'seufolios_departments', 'control_dept_options','' , 21);
-	add_submenu_page( 'seufolios_departments', 'Department Courses', 'Courses', 'manage_options', 'seufolios_departments_subcourses', 'control_course_list' );
+	//add_submenu_page( 'seufolios_departments', 'Department Courses', 'Courses', 'manage_options', 'seufolios_departments_subcourses', 'control_course_list' );
 	add_submenu_page( 'seufolios_departments', 'Department Taxonomies', 'Taxonomies', 'manage_options', 'seufolios_departments_taxes', 'control_tax_list' );
 	add_submenu_page( 'seufolios_departments', 'Department Evaluations', 'Evaluations', 'manage_options', 'seufolios_departments_evaluations', 'control_evaluation_questions');
 }
@@ -572,27 +644,36 @@ function control_tax_list() {
 	<style>
 	div.main_group {
 		float:left;
-		margin:0 2em 0 0;	
+		margin:0;	
 	}
 	table.seufolios { border-spacing:0; }
 	table.seufolios th, table.seufolios td {
 		text-align:left;
-		padding-right:2em;
+		padding:0.5em 1em;
 	}
 	table.seufolios th {
 		background-color: #FFF;	
 		border-bottom:thin solid gray;
 	}
 	table.seufolios td { 
-		padding:0.5em 1em;
-		
+		border-bottom: thin solid #ddd;	
 	}
 	table.seufolios tr {
-		background-color: #EFEFEF;	
+		background-color: #f6f6f6;
 	}
-	table.seufolios tr.selected { 
+	table.seufolios tr.selected td { 
 		background-color:#FFF !important; 
 		font-weight:bold;
+		position: relative;
+		z-index: 2;
+		-moz-box-shadow:    0 8px 10px -7px #000;
+		-webkit-box-shadow: 0 8px 10px -7px #000;
+		box-shadow:         0 8px 10px -7px #000;
+	}
+	table.seufolios tr.selected td:first-of-type { 
+		-moz-box-shadow:    -8px 8px 10px -7px #000;
+		-webkit-box-shadow: -8px 8px 10px -7px #000;
+		box-shadow:         -8px 8px 10px -7px #000;
 	}
 	td.desc {
 		font-size:0.8em;
@@ -602,8 +683,28 @@ function control_tax_list() {
 	table.seufolios td.question { width:200px; }
 	td.title {padding-left:5px;}
 	
-	div#taxes_form { display:none; }
-	div#tax_terms_form { display:none; }
+	div#choose_dept{margin-bottom: 20px;}
+	div#taxes_list, div#terms_list {  min-height:100px; }
+	div#terms_list {
+		position: relative;
+		z-index: 1;
+		-moz-box-shadow:    -8px 8px 10px -7px #000;
+		-webkit-box-shadow: -8px 8px 10px -7px #000;
+		box-shadow:         -8px 8px 10px -7px #000;
+	}
+	div#terms_list tr { background-color: #fff; }
+	div#taxes_form, div#tax_terms_form { 
+		position:relative;
+		display:none; 
+		margin-top: 20px;
+		padding: 0 10px;
+	}
+	div#tax_instructions {
+		position:relative;
+		clear:both;
+		padding-top:3em;
+	}
+	
 	form * {vertical-align:middle;}
 	form.inline * {padding:0; margin:0; height:20px;}
 	.align_right {text-align:right; margin-right:2em;}
@@ -657,12 +758,19 @@ function control_tax_list() {
                     <tr>
                     <td class="align_right"><label for="term_slug">Term Slug</label></td><td><input type="text" name="term_slug" size="5"></td>
                     </tr><tr>
-                    <td class="align_right"><label for="term_title">Term Title</label></td><td><input type="text" name="term_title" size="20"></td>
+                    <td class="align_right"><label for="term_settings">Term Settings</label></td><td><textarea name="term_settings" size="20"></textarea></td>
 					</tr><tr>
                     <td class="align_right"></td><td><input type="submit" value="Add Term" /></td>
                     </tr></table>
                 </form>
             </div>
+        </div>
+        <div id="tax_instructions">
+            <p>A full list of the settings for the <em>Taxonomy</em> and <em>Term</em> entries are available at the WordPress codex for <a href="http://codex.wordpress.org/Function_Reference/register_taxonomy">taxonomies</a> and for <a href="http://codex.wordpress.org/Function_Reference/wp_insert_term">terms</a>. Create the array by putting <strong>=</strong> between the key and value and a <strong>line break</strong> (return key) between different settings. If you need an array in the value, separate the entries with a comma (<strong>,</strong>).</p> 
+			<p>Example settings for a <em>Taxonomy</em> entry:<br>label=Courses<br>hierarchical=false<br>post_types=page, post</em>
+			<p>Create a <em>Post Type</em> using the same form as you use to create a <em>Taxonomy</em>. The <em>Term Title</em> will be the slug of the post type.</p>
+            <p>A full list of the settings for the Post Type are available at the <a href="http://codex.wordpress.org/Function_Reference/register_post_type">WordPress codex</a>.</p>
+            <p>An example settings entry:<br>capability_type=post<br>hierarchical=false<br>label=Reflections</p>
         </div>
     </div>
     
@@ -789,11 +897,11 @@ function control_tax_list() {
 		function edit_term(id) {
 			var tds = jQuery('#term_row_'+id+' td');
 			var old_term_slug = tds[0].innerHTML;
-			var old_term_title = tds[1].innerHTML;
+			var old_term_settings = tds[1].innerHTML;
 			var innerHTML = "<td><input class='edit_form_field' type='hidden' name='term_id' id='term_id' value='" + id + "'>" +
 							"<input class='edit_form_field' type='hidden' name='tax_id' id='tax_id' value='" + jQuery('div#taxes_list table tr.selected').attr('id').match(/[\d]+$/) + "'>" +
 							"<input class='edit_form_field' type='text' name='term_slug' id='term_slug' size='10' value='" +old_term_slug+ "'></td>" +
-							"<td><input class='edit_form_field' type='text' name='term_title' id='term_title' size='10' value='"+old_term_title+"'></td>" +
+							"<td><textarea class='edit_form_field' type='text' name='term_settings' id='term_settings'>"+old_term_settings+"</textarea>" +
 							"<td><button type='submit' onclick='edit_term_submit();'>Done</button> &nbsp; " +
 							"<button id='delete_"+id+"' class='delete_button' type='button' onclick='delete_term("+id+")'>Delete</button></td>";
 			jQuery('#term_row_'+id).html(innerHTML);
@@ -857,10 +965,10 @@ function create_terms_table($tax_id) {
 //used in taxes network admin page
 	//create html and return
 	$result = "<table class='seufolios'>
-		<tr><th>Term Slug</th><th>Term Title</th><th></th></tr>";
+		<tr><th>Term Slug</th><th>Term Settings</th><th></th></tr>";
 	$terms = get_tax_terms($tax_id);
 	foreach($terms as $term)
-		$result .= "<tr id='term_row_$term->id'><td>$term->term_slug</td><td>$term->term_title</td> <td><button id='edit_$term->id' class='edit_button' type='button' onclick='edit_term($term->id)'>Edit</button></td></tr>\n";	
+		$result .= "<tr id='term_row_$term->id'><td>$term->term_slug</td><td>$term->term_settings</td> <td><button id='edit_$term->id' class='edit_button' type='button' onclick='edit_term($term->id)'>Edit</button></td></tr>\n";	
 	
 	$result .= "</table>";
 	
@@ -930,7 +1038,7 @@ function tax_add_term_ajax() {
 	//insert new dept in to table
 	global $wpdb;
 	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
-	$rows_affected = $wpdb->insert( $terms_table_name, array( 'tax_id' => $data['tax_id'], 'term_slug' => $data['term_slug'], 'term_title' => $data['term_title'] ) );
+	$rows_affected = $wpdb->insert( $terms_table_name, array( 'tax_id' => $data['tax_id'], 'term_slug' => $data['term_slug'], 'term_settings' => $data['term_settings'] ) );
 	
 	$result = create_terms_table($data['tax_id']);
 	
@@ -945,7 +1053,7 @@ function tax_edit_term_ajax() {
 	
 	global $wpdb;
 	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
-	$rows_affected = $wpdb->update( $terms_table_name, array('term_slug' => $data['term_slug'], 'term_title' => $data ['term_title'] ), array( 'id' => $data['term_id'])  );
+	$rows_affected = $wpdb->update( $terms_table_name, array('term_slug' => $data['term_slug'], 'term_settings' => $data ['term_settings'] ), array( 'id' => $data['term_id'])  );
 	
 	echo create_terms_table($data['tax_id']);
 	die();
