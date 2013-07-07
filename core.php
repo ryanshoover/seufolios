@@ -133,8 +133,12 @@ function setup_seufolios_db() {
    }
 }
 
+// *** Create global vars
+global $seufolios_dir;
+$seufolios_dir = plugins_url("", __FILE__);
 
 // *** Generic Department functions
+
 function get_depts() {
 	global $wpdb;
 	$dept_table_name = $wpdb->base_prefix . 'seufolios_depts'; 
@@ -157,6 +161,15 @@ function get_tax_terms($tax_id) {
 	$sql = "SELECT * FROM $terms_table_name WHERE tax_id = $tax_id ORDER BY term_slug";
 	$results = $wpdb->get_results($sql);
 	return $results;
+}
+
+function get_posttypes_id($dept_id) {
+	global $wpdb;
+	$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
+	$sql = "SELECT * FROM $taxes_table_name WHERE dept_id = $dept_id AND (tax_slug = 'Posts' OR tax_slug = 'posts')";
+	$taxrow = $wpdb->get_row($sql);
+	if($taxrow) return $taxrow->id;
+	return 0;
 }
 
 function get_courses($dept_id) {

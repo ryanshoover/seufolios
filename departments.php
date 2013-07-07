@@ -36,6 +36,9 @@ add_action('wp_ajax_tax_delete_tax', 'tax_delete_tax_ajax');
 add_action('wp_ajax_tax_add_term', 'tax_add_term_ajax');
 add_action('wp_ajax_tax_edit_term', 'tax_edit_term_ajax');
 add_action('wp_ajax_tax_delete_term', 'tax_delete_term_ajax');
+add_action('wp_ajax_tax_add_posttype', 'tax_add_posttype_ajax');
+add_action('wp_ajax_tax_edit_posttype', 'tax_edit_posttype_ajax');
+add_action('wp_ajax_tax_delete_posttype', 'tax_delete_posttype_ajax');
 
 //Setup department courses settings pages
 add_action('wp_ajax_add_dept_submit', 'add_dept_save_ajax' );
@@ -193,22 +196,20 @@ function setup_custom_tax() {
 	unset($post_types['attachment'], $post_types['revision'], $post_types['nav_menu_item']);
 	
 	//create custom post types 
-	$create_posts = false;
-	foreach($taxes as $tax) {
-		if( strtolower($tax['slug']) == 'posts' ) 
-			$create_posts = true;
-	}
-	if ($create_posts) {
+	$pid = get_posttypes_id($major);
+	
+	if ($pid) {
 		$reserved_posts = array('post', 'page','attachment','revision','nav_menu_item');
 		$slug = strtolower(str_replace(' ', '_', $tax['slug']));
 		$existing_taxes = get_taxonomies();
 		$default_settings = array('public' => true, 'capability_type' => 'page', 'hierarchical' => true, 'taxonomies' => $existing_taxes );
 		
 		if ( !in_array($slug, $reserved_posts) ) { 	// make sure we're not trying to add a reserved post type
-			foreach($tax['terms'] as $p) {
+			foreach($taxes[$pid]['terms'] as $p) {
 				if(strlen($p->term_settings)) {
+					$settings_arr = explode("\ndefault_content=", $p->term_settings, 2);
 					$saved_settings = array();
-					$settings_temp = explode("\n", $p->term_settings);
+					$settings_temp = explode("\n", $settings_arr[0]);
 					foreach($settings_temp as $st) {
 						$tmp = explode("=", $st, 2);
 						$tmp[1] = str_replace(', ', ',', $tmp[1]);
@@ -218,12 +219,14 @@ function setup_custom_tax() {
 					$settings = array_merge($default_settings, $saved_settings);
 				} else $settings = $default_settings;
 				
-				//$settings = ( is_array($p->term_settings) ? array_merge($default_settings, $p->term_settings) : $default_settings);	//merge the default settings and user settings
 				if(!isset($settings['label'])) $settings['label'] = str_replace(' ', '_', $p->term_slug); 
 				register_post_type(
 					strtolower(str_replace(' ', '_', $p->term_slug)), //post type slug
 					$settings	//settings
 				);
+				
+				//add default content filter
+				add_filter( 'default_content', 'seu_posts_default_content', 10, 2 );	
 			}
 		}
 	}
@@ -290,6 +293,20 @@ function setup_custom_tax() {
 		
 	} //foreach
 } //function
+
+function seu_posts_default_content() {
+	$major = get_user_major(); 
+	$pid = get_posttypes_id($major);
+	$posttypes = get_tax_terms($pid);
+	
+	foreach($posttypes as $ptype) {
+		$pslug = strtolower( str_replace(' ', '_', $ptype->term_slug) );
+		if($slug == $post->post_type) {
+			$settings_arr = explode("\ndefault_content=", $ptype->term_settings, 2);
+			return stripslashes( urldecode($settings_arr[1]) );
+		}
+	}
+}
 
 function setup_rats_student() {
 //adds in features that are custom for RATS students
@@ -640,75 +657,22 @@ function control_tax_list() {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
 	
+	//initialize styles
+	global $seufolios_dir;
+	wp_enqueue_style('seu-admin-styles', $seufolios_dir .'/classes/styles-admin.css');
+	
+	//intitialize post types
+	$depts = get_depts();
+	foreach($depts as $dept) {
+		$pid = get_posttypes_id($dept->id);
+		if(!$pid) {
+			global $wpdb;
+			$taxes_table_name = $wpdb->base_prefix . "seufolios_taxes"; 
+			$rows_affected = $wpdb->insert( $taxes_table_name, array( 'dept_id' => $dept->id, 'tax_slug' => 'Posts' ) );
+		}
+	}
+	
 	?>
-	<style>
-	div.main_group {
-		float:left;
-		margin:0;	
-	}
-	table.seufolios { border-spacing:0; }
-	table.seufolios th, table.seufolios td {
-		text-align:left;
-		padding:0.5em 1em;
-	}
-	table.seufolios th {
-		background-color: #FFF;	
-		border-bottom:thin solid gray;
-	}
-	table.seufolios td { 
-		border-bottom: thin solid #ddd;	
-	}
-	table.seufolios tr {
-		background-color: #f6f6f6;
-	}
-	table.seufolios tr.selected td { 
-		background-color:#FFF !important; 
-		font-weight:bold;
-		position: relative;
-		z-index: 2;
-		-moz-box-shadow:    0 8px 10px -7px #000;
-		-webkit-box-shadow: 0 8px 10px -7px #000;
-		box-shadow:         0 8px 10px -7px #000;
-	}
-	table.seufolios tr.selected td:first-of-type { 
-		-moz-box-shadow:    -8px 8px 10px -7px #000;
-		-webkit-box-shadow: -8px 8px 10px -7px #000;
-		box-shadow:         -8px 8px 10px -7px #000;
-	}
-	td.desc {
-		font-size:0.8em;
-		font-weight:400;
-		color:gray;
-	}
-	table.seufolios td.question { width:200px; }
-	td.title {padding-left:5px;}
-	
-	div#choose_dept{margin-bottom: 20px;}
-	div#taxes_list, div#terms_list {  min-height:100px; }
-	div#terms_list {
-		position: relative;
-		z-index: 1;
-		-moz-box-shadow:    -8px 8px 10px -7px #000;
-		-webkit-box-shadow: -8px 8px 10px -7px #000;
-		box-shadow:         -8px 8px 10px -7px #000;
-	}
-	div#terms_list tr { background-color: #fff; }
-	div#taxes_form, div#tax_terms_form { 
-		position:relative;
-		display:none; 
-		margin-top: 20px;
-		padding: 0 10px;
-	}
-	div#tax_instructions {
-		position:relative;
-		clear:both;
-		padding-top:3em;
-	}
-	
-	form * {vertical-align:middle;}
-	form.inline * {padding:0; margin:0; height:20px;}
-	.align_right {text-align:right; margin-right:2em;}
-	</style>
 	<div class="wrap">
         <h2>Department Taxonomies and Post Types</h2>
         <div id="choose_dept">
@@ -727,6 +691,7 @@ function control_tax_list() {
         
         <!--Taxes-->
         <div id="taxes" class="main_group">
+					<h3>Taxonomies</h3>
             <div id="taxes_list">
                 
             </div>
@@ -735,9 +700,9 @@ function control_tax_list() {
                 <form name="add_new_tax" id="add_new_tax" method="POST">
                 	<table>
                     <tr>
-                    <td class="align_right"><label for="tax_slug">Taxonomy</label></td><td><input type="text" name="tax_slug" size="10"></td>
+                    <td class="align_right"><label for="tax_slug">Taxonomy</label></td><td><input type="text" name="tax_slug" size="20" placeholder='Required. Internal name.'></td>
                     </tr><tr>
-                    <td class="align_right"><label for="tax_settings">Settings</label></td><td><textarea name="tax_settings"></textarea></td>
+                    <td class="align_right"><label for="tax_settings">Settings</label></td><td><textarea name="tax_settings" placeholder='Optional. Follow the guidelines below.'></textarea></td>
                     </tr><tr>
                     <td class="align_right"></td><td><input type="submit" value="Add Taxonomy" /></td>
                     </tr></table>
@@ -747,6 +712,7 @@ function control_tax_list() {
         
         <!--Terms-->
         <div id="terms" class="main_group">
+					<h3>Terms</h3>
             <div id="terms_list">
                 
             </div>
@@ -756,21 +722,49 @@ function control_tax_list() {
                 	<input type="hidden" name="tax_id" id="tax_id" value="">
                 	<table>
                     <tr>
-                    <td class="align_right"><label for="term_slug">Term Slug</label></td><td><input type="text" name="term_slug" size="5"></td>
+                    <td class="align_right"><label for="term_slug">Term Slug</label></td><td><input type="text" name="term_slug" size="20" placeholder='Required. Internal name.'></td>
                     </tr><tr>
-                    <td class="align_right"><label for="term_settings">Term Settings</label></td><td><textarea name="term_settings" size="20"></textarea></td>
+                    <td class="align_right"><label for="term_settings">Term Settings</label></td><td><textarea name="term_settings" size="20" placeholder='Optional. Follow the guidelines below.'></textarea></td>
 					</tr><tr>
                     <td class="align_right"></td><td><input type="submit" value="Add Term" /></td>
                     </tr></table>
                 </form>
             </div>
         </div>
-        <div id="tax_instructions">
-            <p>A full list of the settings for the <em>Taxonomy</em> and <em>Term</em> entries are available at the WordPress codex for <a href="http://codex.wordpress.org/Function_Reference/register_taxonomy">taxonomies</a> and for <a href="http://codex.wordpress.org/Function_Reference/wp_insert_term">terms</a>. Create the array by putting <strong>=</strong> between the key and value and a <strong>line break</strong> (return key) between different settings. If you need an array in the value, separate the entries with a comma (<strong>,</strong>).</p> 
-			<p>Example settings for a <em>Taxonomy</em> entry:<br>label=Courses<br>hierarchical=false<br>post_types=page, post</em>
-			<p>Create a <em>Post Type</em> using the same form as you use to create a <em>Taxonomy</em>. The <em>Term Title</em> will be the slug of the post type.</p>
-            <p>A full list of the settings for the Post Type are available at the <a href="http://codex.wordpress.org/Function_Reference/register_post_type">WordPress codex</a>.</p>
-            <p>An example settings entry:<br>capability_type=post<br>hierarchical=false<br>label=Reflections</p>
+				
+				<!--Post Types -->
+        <div id="posttypes" class="main_group">
+					<h3>Custom Post Types</h3>
+            <div id="posttypes_list">
+                
+            </div>
+            <div id="posttypes_form">
+                <h3>Add New Post Type</h3>
+                <form name="add_new_posttype" id="add_new_posttype" method="POST">
+                	<input type="hidden" name="posttype_id" id="posttype_id" value="">
+                	<table>
+                    <tr>
+                    <td class="align_right"><label for="posttype_slug">Post Type Slug</label></td><td><input type="text" name="posttype_slug" size="20" placeholder='Required. Internal name.'></td>
+                    </tr><tr>
+                    <td class="align_right"><label for="posttype_settings">Settings</label></td><td><textarea name="posttype_settings" size="50" placeholder='Optional. Follow the guidelines below.'></textarea></td>
+										</tr><tr>
+                    <td class="align_right"><label for="posttype_content">Default Content</label></td><td><textarea name="posttype_content" size="50" placeholder='Optional. "Strict HTML" formatting is possible.'></textarea></td>
+										</tr><tr>
+                    <td class="align_right"></td><td><input type="submit" value="Add Term" /></td>
+                    </tr></table>
+                </form>
+            </div>
+        </div>
+				
+				<!--Taxonomy Instructions -->
+        <div id="tax_instructions" class="main_group">
+					<h3>Instructions</h3>
+            <p class='narrative'>The settings field needs to be a series of key and value pairs in a special format. Create the series by putting an equal sign (<strong>=</strong>) between the key and value and a line break (<strong>return key</strong>) between different settings. Some values need to be an array. If you need the value to be an array, separate the entries with a comma (<strong>,</strong>).</p> 
+						<p class='narrative'>Create custom <em>Post Types</em> using the same form as you use to create a <em>Taxonomy</em>. Create a category for the custom post types by making a taxonomy. The Taxonomy slug needs to be <strong>Posts</strong>. Individual post types are entered as <strong>Terms</strong>, with the post type settings going in <strong>Term Settings</strong>.</p>
+						<p class='narrative'> The WordPress codex has a full list of the settings available for the <a href="http://codex.wordpress.org/Function_Reference/register_taxonomy">taxonomy</a>, <a href="http://codex.wordpress.org/Function_Reference/wp_insert_term">term</a>, and <a href="http://codex.wordpress.org/Function_Reference/register_post_type">post type</a> fields.
+						<p class='settings'>Default settings for a <em>Taxonomy</em> entry:<br>post_types=<?php $post_types = get_post_types(array('show_ui'=>true, '_builtin'=>true)); unset($post_types['attachment']); $return=''; foreach($post_types as $pt) $return.=$pt.', '; echo substr($return, 0, -2); ?><br>label={Taxonomy Slug}<br>show_admin_column=true</p>
+						<p class='settings'>Default settings for a <em>Term</em> entry:<br>slug={Term Slug}<br>description={Term Slug}</p>
+						<p class='settings'>Default settings for a <em>Post Type</em> entry:<br>public=true<br>capability_type=page<br>hierarchical=true<br>taxonomies=<?php $currtax= get_taxonomies(array('show_ui'=>true, '_builtin'=>true)); $return=''; foreach($currtax as $ct) $return.=$ct.', '; echo substr($return, 0, -2); ?></p>
         </div>
     </div>
     
@@ -780,18 +774,22 @@ function control_tax_list() {
 		{
 		   var b = jQuery(this).val();
 		   jQuery.post( ajaxurl, 
-		  		  {
+		  		{
 		  			'action':'tax_select_dept', 
-					'data': b
+					  'data': b
 				  },
 				  function (response) {
-					  jQuery('#taxes_list').html(response);
+						var arr=JSON.parse(response);
+						jQuery('#taxes_list').html(arr.taxes);
+						jQuery('#posttypes_list').html(arr.posttypes);
 				  });
-			jQuery('#taxes_form').css('display','block');
+			jQuery('#taxes_form, #posttypes_form, #posttypes h3, #taxes h3').show(); //.css('display','block');
+			//jQuery('#posttypes_form').css('display','block');
 		});
 		
 		//Show terms
 		function show_terms(tax_id, button) {
+			jQuery('#terms h3').show();
 			jQuery.post( ajaxurl, 
 		  		  {
 		  			'action':'tax_show_terms', 
@@ -850,9 +848,9 @@ function control_tax_list() {
 		  var b = jQuery(".edit_form_field").serialize() + '&dept_id=' + jQuery('#dept_select').val();
 		  console.log(b);
 		  jQuery.post( ajaxurl, 
-		  		  {
+		  		{
 		  			'action':'tax_edit_tax', 
-					'data': b
+						'data': b
 				  },
 				  function (response) {
 					  jQuery('#taxes_list').html(response);
@@ -863,9 +861,9 @@ function control_tax_list() {
 		//Delete a section
 		function delete_tax(tax_id) {
 			jQuery.post( ajaxurl, 
-		  		  {
+		  		{
 		  			'action':'tax_delete_tax', 
-					'data': 'tax_id='+tax_id +'&dept_id=' + jQuery('#dept_select').val(),
+						'data': 'tax_id='+tax_id +'&dept_id=' + jQuery('#dept_select').val(),
 				  },
 				  function (response) {
 					  jQuery('#taxes_list').html(response);
@@ -936,6 +934,68 @@ function control_tax_list() {
 		  
 		  return false;			
 		}
+		
+		//Add new post type
+		jQuery('#add_new_posttype').submit(function() {
+		  var b = jQuery(this).serialize() + '&dept_id=' + jQuery('#dept_select').val();
+		  jQuery.post( ajaxurl, 
+		  		  {
+		  			'action':'tax_add_posttype', 
+					'data': b
+				  },
+				  function (response) {
+					  jQuery('#posttypes_list').html(response);
+				  });
+				  
+		  jQuery(this).each (function(){
+			this.reset();
+		  });
+		  return false;
+		});
+		
+		//Edit a post type
+		function edit_post(id) {
+			var tds = jQuery('#post_row_'+id+' td');
+			var old_post_slug = tds[0].innerHTML;
+			var old_post_settings = tds[1].innerHTML;
+			var old_post_content = tds[2].innerHTML;
+			var innerHTML = "<td><input class='edit_form_field' type='hidden' name='posttype_id' id='posttype_id' value='" + id + "'>" +
+							"<input class='edit_form_field' type='text' name='posttype_slug' id='posttype_slug' size='10' value='" +old_post_slug+ "'></td>" +
+							"<td><textarea class='edit_form_field' type='text' name='posttype_settings' id='posttype_settings'>"+old_post_settings+"</textarea></td>" +
+							"<td><textarea class='edit_form_field' type='text' name='posttype_content' id='posttype_content'>"+old_post_content+"</textarea></td>" +
+							"<td><button type='submit' onclick='edit_post_submit();'>Done</button> &nbsp; " +
+							"<button id='delete_"+id+"' class='delete_button' type='button' onclick='delete_post("+id+")'>Delete</button></td>";
+			jQuery('#post_row_'+id).html(innerHTML);
+			return false;	
+		}
+		
+		//Submit the Edit Post
+		function edit_post_submit() {
+		  var b = jQuery(".edit_form_field").serialize() + '&dept_id=' + jQuery('#dept_select').val();
+		  jQuery.post( ajaxurl, 
+		  		{
+		  			'action':'tax_edit_posttype', 
+						'data': b
+				  },
+				  function (response) {
+					  jQuery('#posttypes_list').html(response);
+				  });
+		  return false;
+		}
+		
+		//Delete a post
+		function delete_post(term_id) {
+			jQuery.post( ajaxurl, 
+		  		{
+		  			'action':'tax_delete_posttype', 
+						'data': jQuery('.edit_form_field').serialize() + '&dept_id=' + jQuery('#dept_select').val(),
+				  },
+				  function (response) {
+					  jQuery('#posttypes_list').html(response);
+				  });
+		  return false;			
+		}
+		
 	</script>
     
     <?php
@@ -947,14 +1007,17 @@ function create_tax_table($dept_id) {
 	$result = "<table class='seufolios'>
 		<tr><th>Taxonomy Slug</th><th>Settings</th><th></th></tr>";
 	$taxes = get_taxes($dept_id);
-	foreach($taxes as $tax)
-		$result .= "
-		<tr id='tax_row_$tax->id'>
-		<td>$tax->tax_slug</td>
-		<td>$tax->tax_settings</td>
-		<td><button id='edit_$tax->id' class='edit_button' type='button' onclick='edit_tax($tax->id)'>Edit</button>
-		<button id='show_terms_$tax->id' class='show_terms_button' type='button' onclick='show_terms($tax->id, this)'>&raquo;</button></td></tr>\n</td>
-		</tr>\n";	
+	foreach($taxes as $tax) {
+		if(strtolower($tax->tax_slug) != 'posts') { //unset posts tax from this table
+			$result .= "
+			<tr id='tax_row_$tax->id'>
+			<td>$tax->tax_slug</td>
+			<td>$tax->tax_settings</td>
+			<td><button id='edit_$tax->id' class='edit_button' type='button' onclick='edit_tax($tax->id)'>Edit</button>
+			<button id='show_terms_$tax->id' class='show_terms_button' type='button' onclick='show_terms($tax->id, this)'>&raquo;</button></td></tr>\n</td>
+			</tr>\n";	
+		}
+	}
 	
 	$result .= "</table>";
 	
@@ -975,9 +1038,29 @@ function create_terms_table($tax_id) {
 	return $result;
 }
 
+function create_posttypes_table($dept_id) {
+//used in taxes network admin page
+	//create html and return
+	$pid = get_posttypes_id($dept_id);
+	$result = "<table class='seufolios'>
+		<tr><th>Post Type Slug</th><th>Settings</th><th>Default Content</th><th></th></tr>";
+	$terms = get_tax_terms($pid);
+
+	foreach($terms as $term) {
+		$settings = explode("\ndefault_content=", $term->term_settings, 2);
+		$result .= "<tr id='post_row_$term->id'><td>$term->term_slug</td><td>" .$settings[0] ."</td><td>" .stripslashes(urldecode($settings[1])) ."</td><td><button id='edit_$term->id' class='edit_button' type='button' onclick='edit_post($term->id)'>Edit</button></td></tr>\n";	
+	}
+	$result .= "</table>";
+	
+	return $result;
+}
+
 function tax_select_dept_ajax() {
 	$dept_id = $_POST['data'];
-	echo create_tax_table($dept_id);
+	//echo create_tax_table($dept_id);
+	$return['taxes'] = create_tax_table($dept_id);
+	$return['posttypes'] = create_posttypes_table($dept_id);
+	echo json_encode($return);
 	die();
 }
 
@@ -1050,7 +1133,7 @@ function tax_edit_term_ajax() {
 //edit existing taxonomy
 	//create array from post data
 	parse_str($_POST['data'], $data);
-	
+
 	global $wpdb;
 	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
 	$rows_affected = $wpdb->update( $terms_table_name, array('term_slug' => $data['term_slug'], 'term_settings' => $data ['term_settings'] ), array( 'id' => $data['term_id'])  );
@@ -1070,6 +1153,48 @@ function tax_delete_term_ajax() {
 	$rows_affected = $wpdb->query($sql);
 	
 	echo create_terms_table($data['tax_id']);
+	die();
+}
+
+function tax_add_posttype_ajax() {
+	//used in taxes network page to save a new post type	
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	$data['settings'] = $data['posttype_settings'] ."\ndefault_content=" .urlencode($data['posttype_content']);
+	$pid = get_posttypes_id($data['dept_id']);
+	//insert new posttype in to table
+	global $wpdb;
+	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
+	$rows_affected = $wpdb->insert( $terms_table_name, array( 'tax_id' => $pid, 'term_slug' => $data['posttype_slug'], 'term_settings' => $data['settings'] ) );
+	
+	echo create_posttypes_table($data['dept_id']);
+	die();
+}
+
+function tax_edit_posttype_ajax() {
+//edit existing posttype
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	$data['settings'] = $data['posttype_settings'] ."\ndefault_content=" .urlencode($data['posttype_content']);
+	global $wpdb;
+	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
+	$rows_affected = $wpdb->update( $terms_table_name, array('term_slug' => $data['posttype_slug'], 'term_settings' => $data['settings'] ), array( 'id' => $data['posttype_id'])  );
+	
+	echo create_posttypes_table($data['dept_id']);
+	die();
+}
+
+function tax_delete_posttype_ajax() {
+//delete existing posttype
+	//create array from post data
+	parse_str($_POST['data'], $data);
+	//delete posttype from table
+	global $wpdb;
+	$terms_table_name = $wpdb->base_prefix . "seufolios_taxes_terms"; 
+	$sql = "DELETE FROM $terms_table_name WHERE id=" .$data['posttype_id'];
+	$rows_affected = $wpdb->query($sql);
+	
+	echo create_posttypes_table($data['dept_id']);
 	die();
 }
 
