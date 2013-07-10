@@ -54,13 +54,9 @@ function scribd_shortcode( $atts ) {
 		'caption' => 'This is my document'
 	), $atts ) );
 
-<<<<<<< HEAD
-	$plugin_url = (plugins_url().'/seufolios/');
-=======
 	$plugin_url = (plugins_url().'/SEUFolios/');
 	wp_enqueue_script('scribdjs', 'http://www.scribd.com/javascripts/view.js');
->>>>>>> develop
-	
+
 	if ($lightbox) {
 	  return '<a href="' .$plugin_url .'insert_scribd.php?doc_id=' .$doc_id .'&amp;key=' .$access_key .'&amp;width=' .$lightbox_width .'&amp;height=' .$lightbox_height .'" class="lightwindow" title="' .$linked_text .'" caption="' .$caption .'" params="lightwindow_type=external,lightwindow_height=' .$lightbox_height .',lightwindow_width=' .$lightbox_width .'">' .$linked_text .'</a>';
 	} else {

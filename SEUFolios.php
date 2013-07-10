@@ -28,10 +28,10 @@ if(get_option('enable_seufolios_features') != 0) {
 	
 	//multi-department features
 	require_once($plugin_url .'departments.php');
-	
+
 	//scribd inclusion
 	require_once($plugin_url .'scribd_functions.php');
-	
+
 	//pdf-viewer features
 	require_once($plugin_url .'pdf-viewer.php');
 	
@@ -46,7 +46,7 @@ if(get_option('enable_seufolios_features') != 0) {
 	
 	//post visibility
 	require_once($plugin_url .'post_visibility.php');
-	
+
 } //end if get_option
 
 //***Functions
