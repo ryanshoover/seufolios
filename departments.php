@@ -200,9 +200,9 @@ function setup_custom_tax() {
 	
 	if ($pid) {
 		$reserved_posts = array('post', 'page','attachment','revision','nav_menu_item');
-		$slug = strtolower(str_replace(' ', '_', $tax['slug']));
+		$slug = strtolower(str_replace(' ', '_', $taxes[$pid]['slug']));
 		$existing_taxes = get_taxonomies();
-		$default_settings = array('public' => true, 'capability_type' => 'page', 'hierarchical' => true, 'taxonomies' => $existing_taxes );
+		$default_settings = array('public' => true, 'label' => $taxes[$pid]['slug'], 'capability_type' => 'page', 'hierarchical' => true, 'taxonomies' => $existing_taxes );
 		
 		if ( !in_array($slug, $reserved_posts) ) { 	// make sure we're not trying to add a reserved post type
 			foreach($taxes[$pid]['terms'] as $p) {
@@ -232,7 +232,6 @@ function setup_custom_tax() {
 	}
 	
 	//create taxonomies
-	// !!! still needs settings incorporated
 	foreach($taxes as $tax) {
 		if( strtolower($tax['slug']) != 'posts' ) {
 			$slug = strtolower(str_replace(' ', '_', $tax['slug']));
@@ -298,10 +297,10 @@ function seu_posts_default_content() {
 	$major = get_user_major(); 
 	$pid = get_posttypes_id($major);
 	$posttypes = get_tax_terms($pid);
-	
+
 	foreach($posttypes as $ptype) {
 		$pslug = strtolower( str_replace(' ', '_', $ptype->term_slug) );
-		if($slug == $post->post_type) {
+		if($pslug == $_GET['post_type']) {
 			$settings_arr = explode("\ndefault_content=", $ptype->term_settings, 2);
 			return stripslashes( urldecode($settings_arr[1]) );
 		}
