@@ -29,6 +29,9 @@ if(get_option('enable_seufolios_features') != 0) {
 	//scribd inclusion
 	require_once($plugin_url .'scribd_functions.php');
 	
+	//pdf-viewer features
+	require_once($plugin_url .'pdf-viewer.php');
+	
 	//role setup
 	require_once($plugin_url .'role_setup.php');
 	
