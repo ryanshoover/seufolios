@@ -3,7 +3,7 @@
 Plugin Name: SEU Folios
 Description: Adds customization for eportfolio functions
 Author: Ryan Hoover
-Version: 2.3.3
+Version: 2.5
 Author URI: http://ryanhoover.net
 
 Copyright 2013
@@ -11,6 +11,8 @@ Copyright 2013
 What's new
 - network admin moved back to multiple pages
 - streamlined evaluation system
+- flexible custom taxonomy and post type
+- pdf viewer using pdf.js
 */
 
 //used for enable end user features
