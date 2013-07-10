@@ -2,6 +2,9 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<style>
+html, body { height: 100%; width: 100%; margin: 0; padding: 0;}
+</style>
 </head>
 
 <body onLoad="showSection(0);">
@@ -126,7 +129,9 @@ $values = $_GET;
 		 $script .= (is_numeric($value) ? $value .',' : "'" .$value ."',");
 		}
 $script = substr($script, 0, -1);
-$script .= ");\n</script>";
+$script .= ");
+var starIcon = ". ($favorite ? "0" : "1" ) .";
+</script>";
 echo $script;
 ?>
 
@@ -136,14 +141,15 @@ echo $script;
 <script type="text/javascript" src="js/slider.js"></script>
 <script type="text/javascript" src="js/scripts.js"></script>
 <link type="text/css" rel="StyleSheet" href="css/bluecurve/bluecurve.css" />
-<link type="text/css" rel="StyleSheet" href="css/styles.css" />
+<link type="text/css" rel="StyleSheet" href="css/styles.css?ver=3.5.1" />
 
-<div id="full">
-    <form name="evaluation" id="evaluation" action="finalSave.php" method="post">
-    <input type="hidden" id='profid' name='profid' value='<?php echo $saved_values['profid']; ?>'>
-    <input type="hidden" id='studentid' name='studentid' value='<?php echo $saved_values['studentid']; ?>'>
-    <input type="hidden" id='wp_path' name='wp_path' value='<?php echo urlencode($wp_path);  ?>'>
-    
+
+<form name="evaluation" id="evaluation" action="finalSave.php" method="post">
+  <input type="hidden" id='profid' name='profid' value='<?php echo $saved_values['profid']; ?>'>
+  <input type="hidden" id='studentid' name='studentid' value='<?php echo $saved_values['studentid']; ?>'>
+  <input type="hidden" id='wp_path' name='wp_path' value='<?php echo urlencode($wp_path);  ?>'>
+
+  <div id="full">
     <ul id="navigation">
     	<?php
 		$sec_num = 0;
@@ -184,137 +190,13 @@ echo $script;
 
     <div id="buttons">
         <button value='submit'>Submit final evaluation</button>
-        <img src="trash.png" id="delete-entry" class="icon">
+        <img src="trash.png" id="delete-entry" class="icon" title="Delete evaluation">
         <div id="star-entry" class="icon<?php if($favorite) echo ' starred'; ?>" title="Mark as favorite"></div>
         <div id='savestatus'>&nbsp;</div>
     </div>
-    </form>
-</div><!--full-->
-
-<script type="text/javascript">
-
-function setupSliders() {
-	//test to see if range input can exist
-	var testrange=document.createElement("input")
-	testrange.setAttribute("type", "range") 
-	if (testrange.type=="range") var html5 = true;
-	else var html5 = false;
-
-	var sliders = new Array();
-	var divs = jQuery('.slider');
-	inputs = jQuery('.slider-input');
-	
-	for(i=0; i<divs.length; i++) {
-		if (html5) {
-			inputs[i].setAttribute("type", "range");
-			//if n/a option, set the min to 0
-			jQuery(inputs[i]).hasClass('na-option') ? inputs[i].setAttribute('min', '0') :inputs[i].setAttribute('min', '1');
-			inputs[i].setAttribute('max', '6');
-			inputs[i].setAttribute('step', '1');
-			inputs[i].className += ' html5slider';
-			divs[i].className += ' html5div';
-		}
-		else {
-			in_val = inputs[i].value;
-			sliders.push( new Slider(divs[i], inputs[i]) );
-			if( jQuery(inputs[i]).hasClass('na-option') ) sliders[i].setMinimum(0);
-			sliders[i].setValue(in_val); //set slider to saved input value
-		}
-	}
-	
-	//convert 0 to n/a
-	jQuery("div.na-option").each(function(i) { if(jQuery(this).html()=='0') jQuery(this).html('n/a'); });
-}
-
-function setupEventListeners() {
-	jQuery(':input').change(function() { updateDisplay(this); startTimer(this); });
-	$('textarea').bind('keyup',function(e) { startTimer(this); })
-}
-
-function updateDisplay(input) {
-	var inputID = input.id.toString();
-	var displayID = inputID.substr(0, inputID.length-5) + 'displayvalue';
-	
-	if(jQuery('#'+displayID).hasClass('na-option') && input.value==0) {
-		jQuery('#'+displayID).html('n/a');
-	} else {
-		jQuery('#'+displayID).html(input.value);
-	}
-}
-
-function startTimer(input) {
-	if(typeof ajaxTimer != 'undefined') {
-		if(ajaxTimer < 500) clearTimeout(ajaxTimer);
-	}
-	ajaxTimer = setTimeout(function() {sendAjax(input)},500);	
-}
-
-function sendAjax(input) {
-	document.getElementById('savestatus').innerHTML = "saving...";
-	dataString = jQuery('#evaluation').serialize();
-	jQuery.ajax({  
-	  type: "GET",  
-	  url: "tempSave.php",  
-	  data: dataString 
-	}).done(function( msg ) { 
-		clearTimeout(submitTimer);
-		jQuery('#savestatus').html(msg); 
-		submitTimer = setTimeout(function() { jQuery('#savestatus').html(''); },3000);
-	});   
-	clearTimeout(ajaxTimer);
-	return false;  
-
-}
-
-function setupTrashcan() {
-	jQuery("#delete-entry").click(function() {
-		document.getElementById('savestatus').innerHTML = "deleting...";
-		dataString = jQuery('#evaluation').serialize() + "&deleteIcon=1";
-		jQuery.ajax({  
-		  type: "GET",  
-		  url: "tempSave.php",  
-		  data: dataString 
-		}).done(function( msg ) { 
-			clearTimeout(submitTimer);
-			jQuery('#savestatus').html(msg); 
-			submitTimer = setTimeout(function() { jQuery('#savestatus').html(''); },3000);
-			parent.location.reload(); 
-		});
-		return false;
-	});
-}
-function setupStar() {
-	jQuery("#star-entry").hover(function() {$(this).css('background-position-y', '-20px');}, function(){$(this).css('background-position-y', '0'); });
-	jQuery("#star-entry").click(function() { 
-		document.getElementById('savestatus').innerHTML = "starring...";
-		dataString = "starIcon=" + starIcon + "&blogurl=<?php echo urlencode($blog); ?>&deptid=<?php echo $dept_id; ?>&" +jQuery('#evaluation').serialize();
-		jQuery.ajax({  
-		  type: "GET",  
-		  url: "tempSave.php",  
-		  data: dataString 
-		}).done(function( msg ) { 
-			clearTimeout(submitTimer);
-			jQuery('#savestatus').html(msg); 
-			submitTimer = setTimeout(function() { jQuery('#savestatus').html(''); },3000);
-			jQuery("#star-entry").toggleClass('starred'); 
-			if(starIcon == 0) {starIcon = 1; }
-			else {starIcon = 0; }
-		  });
-		return false;
-	 });
-}
-
-var ajaxTimer;
-var submitTimer;
-var inputs = new Array();
-var dataString = '';
-var starIcon = <?php if($favorite) echo 0; else echo 1; ?>;
-setupSliders();
-setupEventListeners();
-setupTrashcan();
-setupStar();
-</script>
-
+   
+  </div><!--full-->
+</form>
 
 </body>
 </html>

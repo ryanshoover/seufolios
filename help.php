@@ -14,10 +14,6 @@ add_action('wp_ajax_help_delete_field', 'help_delete_field');
 //Add network admin screen for departments
 add_action('network_admin_menu', 'setup_admin_page');
 
-//Setup help sql table
-$core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
-register_activation_hook( $core_plugin_url, 'create_help_sqltable' );
-
 //Global vars
 //global $help;
 $help = array();
@@ -27,7 +23,7 @@ function insert_help($help_key) {
 	do_action('enable_help_hook'); //lets us use inline help
 	
 	global $wpdb;
-	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts"; 
+	$help_table_name = $wpdb->base_prefix . 'seufolios_help'; 
 	$sql = "SELECT content FROM $help_table_name WHERE help_key='" .$help_key ."'";
 	$results = $wpdb->get_results($sql);
 	$help_text = $results[0]->content;
@@ -41,7 +37,7 @@ function return_help($help_key) {
 	do_action('enable_help_hook'); //lets us use inline help
 	
 	global $wpdb;
-	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts"; 
+	$help_table_name = $wpdb->base_prefix . 'seufolios_help'; 
 	$sql = "SELECT content FROM $help_table_name WHERE help_key='" .$help_key ."'";
 	$results = $wpdb->get_results($sql);
 	$help_text = $results[0]->content;
@@ -60,33 +56,16 @@ function enable_help() {
 
 function replace_help() {
 	global $wpdb;
-	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts"; 
+	$help_table_name = $wpdb->base_prefix . 'seufolios_help';
 	$sql = "SELECT content FROM $help_table_name WHERE help_key='" .$_POST['data'] ."'";
 	$results = $wpdb->get_results($sql);
 	echo $results[0]->content;
 	die();
 }
 
-function create_help_sqltable() {
-	global $wpdb;
-	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-	
-    //Department
-	$help_table_name = "wp_seufolios_help"; 
-   
-	$sql_help = "CREATE TABLE $help_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  help_key TINYTEXT NOT NULL,
-	  content MEDIUMTEXT NOT NULL,
-	  UNIQUE KEY id (id)
-	);";
-	
-	dbDelta($sql_help);
-}
-
 function get_helps() {
 	global $wpdb;
-	$help_table_name = 'wp_seufolios_help';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
+	$help_table_name = $wpdb->base_prefix . 'seufolios_help';
 	 
 	$sql = "SELECT * FROM $help_table_name ORDER BY help_key ASC";
 	

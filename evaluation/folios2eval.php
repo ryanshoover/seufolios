@@ -184,7 +184,7 @@ function folios2eval_profpage($atts) {
 				if(substr($p_url['path'], -1) != '/') $p_url['path'] = $p_url['path'] .'/';
 				$p_blog = get_blog_details( get_blog_id_from_url($p_url['host'], $p_url['path']) );
 			} else $p_blog = get_blog_details( get_blog_id_from_url($p_url['host']) );
-			$plist[]['txt'] = "<li><a href='$p->blogurl'>$p_blog->blogname</a> (" .count($profs) ." favorites)</li>";
+			$plist[]['txt'] = "<li><a href='$p->blogurl'>$p_blog->blogname</a> (" .count($profs) ." favorite" .(count($profs) > 1 ? "s)" : ")") ."</li>";
 			$plist[]['count'] = count($profs);
 		}
 		usort($plist, "cmp_plist");
