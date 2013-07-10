@@ -43,7 +43,7 @@ function include_professors() {
 			$prof_major = get_the_user_major($professor->ID);
 			//var_dump($prof_major);
 			if($prof_major == $blog_major) {
-				$current_role = get_the_user_role($professor->user_login);
+				$current_role = get_the_user_role($professor);
 				if ($current_role != 'Administrator')
 				  $result = add_existing_user_to_blog( array( 'user_id' => $professor->ID, 'role' => 'professor' ) );
 			} else {
@@ -51,38 +51,6 @@ function include_professors() {
 			}
 		}
 	} //end if
-}
-
-function get_the_user_role($user_login) { 
-        global $wpdb, $wp_roles; 
-
-		$user = get_user_by('login', $user_login );
-
-        if ( !isset($wp_roles) ) 
-            $wp_roles = new WP_Roles(); 
-			
-		if ($user && $user->has_cap('manage_categories')) //test if user exists (logged in) then if it has admin caps
-			return 'Administrator'; //Give admins and superadmins Administrator role
-	    		
-		foreach($wp_roles->role_names as $role => $Role) {
-		  $caps = $wpdb->prefix . 'capabilities'; 
-		  
-		  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
-			  return $Role; 
-		  } 
-		} 
-		
-		$no_role = 'World';
-		return $no_role;
-
-} 
-
-//generic function to return user's major
-function get_the_user_major($user_id) {
-  $key = 'major';
-  $single = false;
-  $major = get_user_meta( $user_id, $key, $single ); 
-  return $major[0];
 }
 
 

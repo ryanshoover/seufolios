@@ -8,11 +8,6 @@ add_action( 'admin_bar_menu', 'toolbar_evaluation', 999 );
 //Add network admin screen for evaluation question types
 add_action('network_admin_menu', 'control_eval_ques');
 
-//Setup eval sql table
-$core_plugin_url = (trailingslashit( plugin_dir_path( __FILE__ ) )) .'SEUFolios.php';
-register_activation_hook( $core_plugin_url, 'create_eval_sqltable' ); //individual evaluations
-register_activation_hook( $core_plugin_url, 'create_eval_types_sqltable' ); //types of eval questions
-
 //ajax hooks
 add_action('wp_ajax_add_ques_type_submit', 'add_eval_type_save_ajax' );
 add_action('wp_ajax_eval_edit_question_type', 'add_eval_type_edit_ajax' );
@@ -20,7 +15,7 @@ add_action('wp_ajax_eval_delete_question_type', 'add_eval_type_delete_ajax' );
 
 function toolbar_scripts_method() {
 	$current_user = wp_get_current_user();
-	$user_role = get_user_role($current_user);
+	$user_role = get_the_user_role($current_user);
 	global $blog_id;
 	$site_details = get_blog_details($blog_id, 'siteurl');
 	
@@ -41,8 +36,8 @@ function toolbar_evaluation( $wp_admin_bar ) {
     $eval_table_name = "wp_seufolios_evaluations"; 
 
 	$current_user = wp_get_current_user();
-	$user_role = get_user_role($current_user);
-	$admin_id = get_user_id_from_string( get_blog_option(get_current_blog_id(), 'admin_email'));
+	$user_role = get_the_user_role($current_user);
+	$admin_id = get_user_id_from_string( get_blog_option($current_blog->blog_id, 'admin_email'));
 	$submit = "profid=$current_user->id" ."&" ."studentid=$admin_id" ."&";
 
 	$sql = "SELECT answers FROM $eval_table_name WHERE profid=$current_user->id and studentid=$admin_id";
@@ -63,60 +58,6 @@ function toolbar_evaluation( $wp_admin_bar ) {
 		$wp_admin_bar->add_node($args);
 	}
 }
-
-function create_eval_sqltable() {
-	global $wpdb;
-	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-	
-	$eval_table_name = "wp_seufolios_evaluations"; 
-   
-	$sql_eval = "CREATE TABLE $eval_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  profid mediumint(9) NOT NULL,
-	  studentid mediumint(9) NOT NULL,
-	  siteurl mediumtext,
-	  answers mediumtext NOT NULL,
-	  taxonomies mediumtext,
-	  submittime timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	  UNIQUE KEY id (id)
-	);";
-	
-	dbDelta($sql_eval);
-	
-	$eval_table_name = "wp_seufolios_starred"; 
-   
-	$sql_eval = "CREATE TABLE $eval_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  blogurl mediumtext NOT NULL,
-	  deptid mediumint(9),
-	  profids mediumtext,
-	  submittime timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	  UNIQUE KEY id (id)
-	);";
-	
-	dbDelta($sql_eval);
-}
-
-function get_user_role($user) { 
-        global $wpdb, $wp_roles; 
-		
-		//$user = get_user_by('login', $user_login );
-        if ( !isset($wp_roles) ) 
-            $wp_roles = new WP_Roles(); 
-			
-		if ( current_user_can('manage_network') )
-			return 'Super_admin';
-	 
-	 	//return $wp_roles;
-		foreach($wp_roles->role_names as $role => $Role) {
-		  $caps = $wpdb->prefix . 'capabilities'; 
-		  
-		  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
-			  return $Role; 
-		  } 
-		} 
-
-} 
 
 require_once('evaluation/folios2eval.php');
 
@@ -343,33 +284,4 @@ function add_eval_type_delete_ajax() {
 	
 	echo create_eval_q_table();
 	die();
-}
-
-function get_question_types() {
-	global $wpdb;
-	$eval_table_name = 'wp_seufolios_eval_ques_types';  //disabled because prefix changes in multisite $wpdb->prefix . "seufolios_depts";
-	 
-	$sql = "SELECT * FROM $eval_table_name ORDER BY slug ASC";
-	
-	$results = $wpdb->get_results($sql);
-	
-	return $results;
-}
-
-function create_eval_types_sqltable() {
-	global $wpdb;
-	require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-	
-    //Eval question types
-	$eval_table_name = "wp_seufolios_eval_ques_types"; 
-   
-	$sql_eval = "CREATE TABLE $eval_table_name (
-	  id mediumint(9) NOT NULL AUTO_INCREMENT,
-	  slug tinytext NOT NULL,
-	  displayName tinytext NOT NULL,
-	  code mediumtext NOT NULL,
-	  UNIQUE KEY id (id)
-	);";
-	
-	dbDelta($sql_eval);
 }
