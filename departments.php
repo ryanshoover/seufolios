@@ -126,8 +126,9 @@ function save_custom_user_profile_fields( $user_id ) {
 	setup_custom_tax();
 	
 	//used to enable new post types
-	global $wp_rewrite;
-	$wp_rewrite->flush_rules();
+	//taken out at request of edublogs
+	//global $wp_rewrite;
+	//$wp_rewrite->flush_rules(); 
 }
 
 //add in custom user profile fields in signup page

@@ -4,7 +4,6 @@
 function enable_role_setup() {
 	add_action('admin_init', 'insert_roles');
 	add_action('admin_init', 'include_professors');
-	delete_roles(); 
 }
 
 //Add various roles for SEUFolios
@@ -21,15 +20,6 @@ function insert_roles() {
   add_role('peer', 'Peer', array('read' => true));
 }
 
-
-//Remove various unneeded roles
-function delete_roles() {
-  $remove_roles = array ('author', 'contributor', 'subscriber', 'editor');
-  foreach ($remove_roles as $role) 
-  {
-	  remove_role($role);	
-  }
-}
 
 function include_professors() {
 	
