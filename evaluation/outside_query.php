@@ -9,8 +9,8 @@ $_POST = array(
 );
 */
 $key = 'abcdefg1234567';
-if (!ereg($key, $_POST['key'])){
-  echo "Invalid referer "; 
+if (strcmp($key, $_POST['key']) != 0){
+  echo "Invalid referer " .$_POST['key']; 
   die;
 }
 
@@ -44,6 +44,9 @@ switch($_POST['function']) {
 	case 'get_dept_data':
 		echo get_dept_data();
 		break;
+	case 'get_question_data':
+		echo get_question_data();
+		break;
 	case 'get_evaluations':
 		echo get_evaluations();
 		break;
@@ -58,6 +61,11 @@ function get_dept_data() {
 		}
 	}
 	return serialize($depts);
+}
+
+function get_question_data() {
+	$ques_types = get_question_types();
+	return serialize($ques_types);
 }
 
 function get_evaluations() {
