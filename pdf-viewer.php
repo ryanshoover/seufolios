@@ -390,7 +390,7 @@ class pdf_viewer{
 		), $atts ) );
 		
 		$post = get_post($post_id);
-		$post_path = $post->guid;
+		$post_path = urlencode($post->guid);
 		
 		if($lightbox) {
 			//insert link that opens pdf in a lightbox
