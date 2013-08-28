@@ -26,10 +26,10 @@ function setupSliders() {
 	
 	for(i=0; i<divs.length; i++) {
 		if (html5) {
-			inputs[i].setAttribute("type", "range");
+			//inputs[i].setAttribute("type", "range");
 			//if n/a option, set the min to 0
 			jQuery(inputs[i]).hasClass('na-option') ? inputs[i].setAttribute('min', '0') :inputs[i].setAttribute('min', '1');
-			inputs[i].setAttribute('max', '6');
+			//inputs[i].setAttribute('max', '6');
 			inputs[i].setAttribute('step', '1');
 			inputs[i].className += ' html5slider';
 			divs[i].className += ' html5div';
@@ -50,6 +50,7 @@ function setupSliders() {
 		else {
 			in_val = inputs[i].value;
 			sliders.push( new Slider(divs[i], inputs[i]) );
+			sliders[i].setMaximum(inputs[i].getAttribute('max'));
 			if( jQuery(inputs[i]).hasClass('na-option') ) sliders[i].setMinimum(0);
 			sliders[i].setValue(in_val); //set slider to saved input value
 			
