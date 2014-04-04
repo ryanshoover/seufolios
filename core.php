@@ -208,19 +208,20 @@ function get_question_types() {
 //get user's role in a site
 function get_the_user_role($user) { 
 	global $wpdb, $wp_roles; 
-	
+	//var_dump($user);
 	if ( !isset($wp_roles) ) 
 		$wp_roles = new WP_Roles(); 
 		
 	if ($user && current_user_can('manage_network') )
 		return 'Super_admin';
-	
+	/* 
+	!!taken out for Edublogs - Teachers can manage categories so they're listed as Administrators and don't see Evaluate screen!!
 	if ($user && current_user_can('manage_categories')) //test if user exists (logged in) then if it has admin caps
 		return 'Administrator'; //Give admins and superadmins Administrator role
-			
+	*/	
 	foreach($wp_roles->role_names as $role => $Role) {
-	  $caps = $wpdb->base_prefix . 'capabilities'; 
-	  if (!empty($user->$caps) && array_key_exists($role, $user->$caps)) {
+	  //$caps = $wpdb->base_prefix . 'capabilities'; 
+	  if (!empty($user->roles) && in_array($role, $user->roles)) {
 		  return $Role; 
 	  } 
 	} 
