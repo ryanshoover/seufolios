@@ -137,6 +137,12 @@ function folios2eval_profpage($atts) {
 	$return = '';
 	
 	$folio_ids = $wpdb->get_results("SELECT blogid FROM wp_seufolios_folios2eval WHERE deptid=".$major);
+	$folio_id_dump = '<h2>Folio Site IDs</h2><ol>';
+	foreach($folio_ids as $id) {
+		$folio_id_dump .= '<li>'.$id->blogid.'</li>';
+	}
+	$folio_id_dump .= '</ol>';
+	
 	foreach($folio_ids as $id) 
 		$folios[] = get_blog_details($id->blogid);
 	
@@ -153,17 +159,18 @@ function folios2eval_profpage($atts) {
 	$return .= " (and <strong>".$wpdb->num_rows."</strong> all time).</p>\n<hr>\n";
 	
 	$temp_return = "<p class='callout-right'>When you're ready to give feedback on the portfolio click the <em>Evaluate</em> link in the black admin bar at the top of the screen.<br><br>Oh, and once you've opened the evaluation form please either complete the evaluation or delete your feedback. Otherwise we assume you'll finish it and won't assign it to anyone else.</p>
-	<p>There's still work to be done, though. The portfoios below need to be evaluated. Mind doing one?</p>\n<ul class='folios'>\n";
+	<p>There's still work to be done, though. The portfoios below need to be evaluated. Mind doing one?</p>\n<ol class='folios'>\n";
 	$count = 0;
 	foreach($folios as $folio) {
 		$student = get_user_by('email',get_blog_option($folio->blog_id,'admin_email'));
-		$result = $wpdb->get_results("SELECT id FROM $eval_table_name WHERE studentid=".$student->ID);
+		//$result = $wpdb->get_results("SELECT id FROM $eval_table_name WHERE studentid=".$student->ID);
+		$result = $wpdb->get_results("SELECT id FROM $eval_table_name WHERE siteurl=".$folio->domain .$folio->path);
 		if( $max_evals-$wpdb->num_rows > 0) {
 			$temp_return .= "<li><a href='http://".$folio->domain .$folio->path ."' target='_blank'>".$student->user_nicename." - ".get_blog_option($folio->blog_id,'blogname')."</a>&nbsp;&nbsp;(Needs <strong>" .($max_evals-$wpdb->num_rows) ."</strong> more evaluation" .($max_evals-$wpdb->num_rows > 1 ? "s)" : ")") ."</li>\n";
 			$count++;
 		}
 	}
-	$temp_return .= "</ul>";
+	$temp_return .= "</ol>";
 	
 	if($count) {
 		$return .= $temp_return;
@@ -192,6 +199,8 @@ function folios2eval_profpage($atts) {
 		$return .= "</ul>";
 	}
 	
+	// Dump out site ids for testing
+	//$return .= $folio_id_dump;
 	return $return;
 }
 
