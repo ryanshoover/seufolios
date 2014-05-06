@@ -163,8 +163,9 @@ function folios2eval_profpage($atts) {
 	$count = 0;
 	foreach($folios as $folio) {
 		$student = get_user_by('email',get_blog_option($folio->blog_id,'admin_email'));
+		$siteurl = rtrim("http://" .$folio->domain .$folio->path, "/");
 		//$result = $wpdb->get_results("SELECT id FROM $eval_table_name WHERE studentid=".$student->ID);
-		$result = $wpdb->get_results("SELECT id FROM $eval_table_name WHERE siteurl=".$folio->domain .$folio->path);
+		$result = $wpdb->get_results("SELECT id FROM wp_seufolios_evaluations WHERE siteurl='$siteurl'");
 		if( $max_evals-$wpdb->num_rows > 0) {
 			$temp_return .= "<li><a href='http://".$folio->domain .$folio->path ."' target='_blank'>".$student->user_nicename." - ".get_blog_option($folio->blog_id,'blogname')."</a>&nbsp;&nbsp;(Needs <strong>" .($max_evals-$wpdb->num_rows) ."</strong> more evaluation" .($max_evals-$wpdb->num_rows > 1 ? "s)" : ")") ."</li>\n";
 			$count++;
